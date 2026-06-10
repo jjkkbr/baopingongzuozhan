@@ -39,6 +39,28 @@ npm.cmd run dist
 - `release/` 是本机构建产物目录，已在 `.gitignore` 中排除，不提交到 GitHub。
 - 旧聊天中暴露过的阿里百炼 Key 仍建议后续到服务商后台作废并重新生成。
 
+### v0.1.0 测试版发布准备
+
+继续推进测试版发布流程，补充真实安装链路验证和 GitHub Release 草稿。
+
+已完成：
+- 本机未安装 GitHub CLI，暂无法直接用 `gh release create` 自动创建 GitHub Release 和上传附件。
+- 新增 `docs/releases/v0.1.0.md`，整理 GitHub Release 草稿，包含发布定位、下载文件、主要功能、安装方式、AI Key 配置、Edge 插件加载、安装测试记录、已知问题和合规边界。
+- 使用当前安装包执行静默安装测试，安装目录为 `output/install-smoke/BaopinWorkbench`，安装器返回 `0`。
+- 确认已安装目录包含主程序、卸载程序和 `resources/edge-extension/manifest.json`。
+- 启动已安装主程序，`http://127.0.0.1:4173` 返回 `200`，页面可识别为工作台。
+- 确认运行数据目录为 `C:\Users\123\AppData\Roaming\爆品广告工作台`。
+- 执行静默卸载，卸载器返回 `0`。
+- 卸载后测试安装目录无残留文件，4173 端口无残留占用。
+
+验证记录：
+```powershell
+release\爆品广告工作台 Setup 0.1.0.exe /S /D=<测试安装目录>
+Invoke-WebRequest -UseBasicParsing -Uri http://127.0.0.1:4173
+Uninstall 爆品广告工作台.exe /S
+Get-NetTCPConnection -LocalPort 4173
+```
+
 ## 2026-06-09
 
 ### 规则库差异预览和版本回滚
