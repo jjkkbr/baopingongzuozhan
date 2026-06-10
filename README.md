@@ -29,6 +29,31 @@
 - 批量任务，支持批量生成、批量审核、历史方案复审、取消、重试、归档和报告包导出。
 - 专业方案和批量报告包导出到 `output/`。
 
+## 从 GitHub 拉取后启动
+
+首次在新机器上运行：
+
+```powershell
+git clone https://github.com/jjkkbr/baopingongzuozhan.git
+cd baopingongzuozhan
+npm install
+npm.cmd start
+```
+
+打开：
+
+```text
+http://127.0.0.1:4173
+```
+
+运行桌面版：
+
+```powershell
+npm.cmd run desktop
+```
+
+如果 PowerShell 阻止 `npm.ps1`，优先使用 `npm.cmd`。AI Key 请在工作台左侧“大模型设置”里保存，或只放在本机环境变量中；不要写入代码、README、前端文件或可提交配置。之前在聊天里暴露过的 Key 应先到服务商后台作废，再重新生成新 Key。
+
 ## 启动
 
 ```powershell
@@ -84,6 +109,48 @@ release/win-unpacked/爆品广告工作台.exe
 ```
 
 桌面版会自动启动内置本地服务并打开工作台窗口。AI 配置、导出文件等运行时数据会保存到系统用户数据目录，不写入安装目录。
+
+## 发布前安全检查
+
+上传或发布前先确认仓库只包含源码、文档和样例数据，不包含本机私有配置、运行日志、导出包或安装包。
+
+```powershell
+git status --short --ignored
+git ls-files | Select-String -Pattern "data/.*\.local\.json|^\.env$|^output/|^release/|^dist/|^node_modules/|^\.edge-"
+```
+
+上面的第二条命令正常情况下不应输出任何已跟踪文件。再扫描常见密钥形态：
+
+```powershell
+rg -n --hidden -S `
+  -e 'sk-[A-Za-z0-9_-]{16,}' `
+  -e 'sk-sp-[A-Za-z0-9_-]+' `
+  -e 'ghp_[0-9A-Za-z_]{20,}' `
+  -e 'github_pat_[0-9A-Za-z_]{20,}' `
+  -e 'BEGIN (RSA|OPENSSH|PRIVATE) KEY' `
+  -g '!node_modules/**' `
+  -g '!output/**' `
+  -g '!release/**' `
+  -g '!dist/**' `
+  -g '!.git/**' `
+  -g '!.edge*/**' `
+  -g '!data/*.local.json' `
+  -g '!*.log' `
+  .
+```
+
+如需发布桌面安装包，先跑基础检查：
+
+```powershell
+node --check src\server.js
+node --check public\app.js
+node --check desktop\main.cjs
+node --check edge-extension\popup.js
+node --check scripts\verify-edge-extension.mjs
+node scripts\verify-edge-extension.mjs
+```
+
+本地私有文件已经被 `.gitignore` 排除，包括 `data/*.local.json`、`.env`、`output/`、`release/`、日志文件和 Edge 临时目录。不要用 `git add -f` 强行提交这些文件。
 
 ## AI 大模型分析
 
