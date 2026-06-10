@@ -1,5 +1,44 @@
 # 工作日志
 
+## 2026-06-10
+
+### Windows 测试安装包构建和冒烟验证
+
+按发布前收口流程先跳过阿里百炼 Key 轮换，完成 GitHub 当前版本的构建、基础安全检查和桌面版冒烟验证。
+
+已完成：
+- 运行发布前安全检查，确认 Git 跟踪文件中没有 `data/*.local.json`、`.env`、`output/`、`release/`、`dist/`、`node_modules/` 或 `.edge-*` 临时目录。
+- 运行常见密钥形态扫描，未在可提交文件中发现 `sk-*`、`sk-sp-*`、GitHub Token 或私钥片段。
+- 运行核心语法检查：`src/server.js`、`public/app.js`、`desktop/main.cjs`、`edge-extension/popup.js` 和 `scripts/verify-edge-extension.mjs` 均通过。
+- 运行 `node scripts\verify-edge-extension.mjs`，本地 fixture 识别 10/10 个商品，插件验证通过。
+- 使用 `npm.cmd run dist` 重新构建 Windows NSIS 测试安装包。
+- 生成安装包：`release/爆品广告工作台 Setup 0.1.0.exe`，大小约 76MB。
+- 生成免安装版：`release/win-unpacked/爆品广告工作台.exe`。
+- 确认打包资源包含 `release/win-unpacked/resources/edge-extension/manifest.json`，Edge 插件资源已随桌面包带入。
+- 启动免安装版做冒烟验证，`http://127.0.0.1:4173` 返回 200，页面内容可识别为工作台页面。
+- 确认桌面版运行数据目录为 `C:\Users\123\AppData\Roaming\爆品广告工作台`，没有写入安装目录。
+- 测试后关闭免安装版进程，并确认 4173 端口未被残留进程占用。
+
+验证记录：
+```powershell
+git status --short --branch
+git ls-files | Select-String -Pattern "data/.*\.local\.json|^\.env$|^output/|^release/|^dist/|^node_modules/|^\.edge-"
+rg -n --hidden -S -e 'sk-[A-Za-z0-9_-]{16,}' -e 'sk-sp-[A-Za-z0-9_-]+' -e 'ghp_[0-9A-Za-z_]{20,}' -e 'github_pat_[0-9A-Za-z_]{20,}' -e 'BEGIN (RSA|OPENSSH|PRIVATE) KEY' -g '!node_modules/**' -g '!output/**' -g '!release/**' -g '!dist/**' -g '!.git/**' -g '!.edge*/**' -g '!data/*.local.json' -g '!*.log' .
+node --check src\server.js
+node --check public\app.js
+node --check desktop\main.cjs
+node --check edge-extension\popup.js
+node --check scripts\verify-edge-extension.mjs
+node scripts\verify-edge-extension.mjs
+$env:ELECTRON_MIRROR="https://npmmirror.com/mirrors/electron/"
+npm.cmd run dist
+```
+
+注意事项：
+- 当前安装包未配置正式代码签名证书，Windows 安装时仍可能提示未知发布者。
+- `release/` 是本机构建产物目录，已在 `.gitignore` 中排除，不提交到 GitHub。
+- 旧聊天中暴露过的阿里百炼 Key 仍建议后续到服务商后台作废并重新生成。
+
 ## 2026-06-09
 
 ### 规则库差异预览和版本回滚
