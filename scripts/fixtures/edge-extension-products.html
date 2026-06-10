@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>Edge 插件商品识别测试页</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 32px;
+        font-family: Arial, "Microsoft YaHei", sans-serif;
+        background: #f4f5f7;
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(220px, 1fr));
+        gap: 18px;
+        max-width: 1120px;
+        margin: 0 auto;
+      }
+
+      article,
+      li,
+      section,
+      tr.product-row {
+        min-height: 220px;
+        padding: 14px;
+        list-style: none;
+        background: #fff;
+        border: 1px solid #d9dee8;
+      }
+
+      .price-row {
+        margin-top: 10px;
+        color: #c2410c;
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      img,
+      .cover {
+        width: 100%;
+        height: 128px;
+        object-fit: cover;
+        display: block;
+        background-size: cover;
+        background-position: center;
+      }
+
+      .title,
+      .name {
+        display: block;
+        min-height: 42px;
+        margin-top: 10px;
+        font-weight: 700;
+        color: #1d2433;
+      }
+
+      .price {
+        margin-top: 10px;
+        color: #c2410c;
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .sales,
+      .shop {
+        margin-top: 6px;
+        color: #526071;
+      }
+
+      table {
+        border-collapse: collapse;
+        background: #fff;
+        border: 1px solid #d9dee8;
+      }
+
+      td {
+        padding: 10px;
+        vertical-align: top;
+      }
+
+      tr.product-row {
+        display: table-row;
+        min-height: 0;
+      }
+
+      tr.product-row img {
+        width: 96px;
+        height: 96px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <article class="Card--doubleCardWrapper" data-item-id="tb-1001" data-sales-trend="[1800,2100,2250,2300,2600,2800,3100]">
+        <a href="https://item.taobao.com/item.htm?id=1001001">
+          <img data-src="//img.example.test/wind.jpg" alt="高速吹风机家用负离子护发" />
+          <span class="Title--titleText title">高速吹风机家用负离子护发 低噪速干</span>
+          <span class="price">¥ 129.00</span>
+          <span class="sales">月销 2.3万+</span>
+          <span class="shop">风感电器旗舰店</span>
+        </a>
+      </article>
+
+      <li class="feed-card" data-e2e="goods-card" data-goods-id="dy-2002" data-sales-history="[120,138,156,188]">
+        <a href="https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?goodsId=2002002" title="厨房多功能切菜器 家用省力备菜">
+          <div class="cover" style="background-image: url('//img.example.test/cutter.jpg')"></div>
+          <span class="name">厨房多功能切菜器 家用省力备菜</span>
+          <span class="price">到手价 39.90</span>
+          <span class="sales">1.8万+ 人已买</span>
+          <span class="shop">厨房好物官方店</span>
+        </a>
+      </li>
+
+      <section class="result-tile">
+        <a href="https://shop.example.test/product/sku-3003003" aria-label="便携旅行收纳包 六件套 防水分装">
+          <picture>
+            <source srcset="//img.example.test/bag.webp 1x, //img.example.test/bag@2x.webp 2x" />
+            <img src="//img.example.test/bag.jpg" alt="便携旅行收纳包 六件套" />
+          </picture>
+          <span class="name">便携旅行收纳包 六件套 防水分装</span>
+          <span class="price">现价 59</span>
+          <span class="sales">累计销量 3,456 件已售</span>
+          <span class="shop">出行收纳专营店</span>
+        </a>
+      </section>
+
+      <div class="gl-i-wrap" data-sku="4004004" data-ware-id="4004004">
+        <a href="https://item.jd.com/4004004.html" title="无线蓝牙降噪耳机 长续航通勤">
+          <img data-lazy-img="//img.example.test/headphone.jpg" data-imgurl="//img.example.test/headphone-large.jpg" alt="无线蓝牙降噪耳机 长续航通勤" />
+          <div class="p-name">无线蓝牙降噪耳机 长续航通勤</div>
+          <div class="p-price"><span>¥</span><i>199</i><em>.00</em></div>
+          <div class="p-commit">累计销量 7,890 件已售</div>
+          <div class="p-shop" data-shop="声境数码自营店">声境数码自营店</div>
+        </a>
+      </div>
+
+      <article class="goods-card water-fall-item" data-goods-id="pdd-5005" data-product-title="家用加厚抽屉式收纳箱 透明可叠放">
+        <a href="https://mobile.yangkeduo.com/goods.html?goods_id=5005005">
+          <div class="cover" style="--goods-cover: url('//img.example.test/box.webp'); background-image: var(--goods-cover);"></div>
+          <span class="name">家用加厚抽屉式收纳箱 透明可叠放</span>
+          <span class="price-row">券后 ￥ 26 . 80</span>
+          <span class="sales">已拼 4.2万+ 件</span>
+          <span class="shop">居家收纳工厂店</span>
+        </a>
+      </article>
+
+      <section class="note-card product-card-v2" data-product-id="xhs-6006" data-name="春夏通勤防晒轻薄外套女">
+        <a href="https://www.xiaohongshu.com/goods/6006006" aria-label="春夏通勤防晒轻薄外套女 UPF50+">
+          <img data-cover="//img.example.test/jacket.jpg" alt="春夏通勤防晒轻薄外套女" />
+          <span class="desc">春夏通勤防晒轻薄外套女 UPF50+</span>
+          <span class="price">活动价 89</span>
+          <span class="sales">1.1万+ 人已买</span>
+          <span class="shop">轻户外服饰旗舰店</span>
+        </a>
+      </section>
+
+      <article class="offer-card offer-list-item" data-offer-id="1688-7007" data-offer-title="工厂现货硅胶折叠水杯 户外便携">
+        <a href="https://detail.1688.com/offer/7007007.html">
+          <div class="cover" data-image-url="//img.example.test/cup-1688.jpg"></div>
+          <span class="offer-name">工厂现货硅胶折叠水杯 户外便携</span>
+          <span class="price" data-price="12.80">拿货价 ￥12.80</span>
+          <span class="sales">近30天成交 2,450 件</span>
+          <span class="shop" data-shop="义乌户外用品工厂店">义乌户外用品工厂店</span>
+        </a>
+      </article>
+
+      <article class="commodity-card ks-goods-tile" data-commodity-id="ks-8008" data-commodity-title="儿童防滑训练筷 可拆洗学习餐具" data-series='[{"sold":320},{"sold":368},{"sold":410},{"sold":455}]'>
+        <a href="https://www.kwaixiaodian.com/commodity/8008008?commodityId=8008008">
+          <div class="cover" style="background-image: url('//img.example.test/chopsticks.jpg')"></div>
+          <span class="commodity-name">儿童防滑训练筷 可拆洗学习餐具</span>
+          <span class="price" data-price-cent="1990">活动价 ￥19.90</span>
+          <span class="sales" aria-label="已售 9800 件">9,800 件已售</span>
+          <span class="shop">童趣餐具专卖店</span>
+        </a>
+      </article>
+
+      <table class="merchant-table">
+        <tbody>
+          <tr class="product-row" data-sku-code="erp-9009" data-product-title="商家后台授权样品 小型桌面加湿器" data-sales-trend='[68,72,85,91]'>
+            <td>
+              <a href="https://merchant.example.test/product/sku/9009009">
+                <img data-thumb="//img.example.test/humidifier.jpg" alt="商家后台授权样品 小型桌面加湿器" />
+              </a>
+            </td>
+            <td class="product-name">商家后台授权样品 小型桌面加湿器</td>
+            <td class="amount" data-price="79">售价 79.00</td>
+            <td class="volume" title="近7日销量 68 72 85 91">近7日销量 316</td>
+            <td class="seller" data-seller="后台授权店铺">后台授权店铺</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <section class="item-card compact-tile" data-auction-id="tm-1010" data-subject="猫咪自动饮水机 静音循环过滤">
+        <a href="https://detail.tmall.com/item.htm?id=1010010" title="猫咪自动饮水机 静音循环过滤">
+          <img data-pic-url="//img.example.test/cat-water.jpg" alt="猫咪自动饮水机 静音循环过滤" />
+          <span class="subject">猫咪自动饮水机 静音循环过滤</span>
+          <span class="promotion-price" data-promotion-price="69.90">券后价 69.90</span>
+          <span class="meta" aria-label="月销 1.2万+">已有 1.2万+ 人付款</span>
+          <span class="shop">宠物智能生活馆</span>
+        </a>
+      </section>
+
+      <section class="banner">
+        <strong>广告位</strong>
+        <p>品牌专题内容，不包含商品价格和销量，不应被识别为商品卡片。</p>
+      </section>
+
+      <section class="live-entry" aria-label="直播入口">
+        <strong>直播入口</strong>
+        <p>今日直播间福利，点击预约，不包含具体商品价格和销量。</p>
+      </section>
+
+      <section class="coupon-card">
+        <strong>满 199 减 40 优惠券</strong>
+        <p>店铺券组件，不应作为商品卡片。</p>
+      </section>
+    </main>
+  </body>
+</html>

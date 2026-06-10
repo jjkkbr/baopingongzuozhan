@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>爆品工作台采集助手</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup">
+      <header>
+        <p>COMPLIANT CAPTURE</p>
+        <h1>采集当前页面商品</h1>
+      </header>
+      <button id="captureBtn" type="button">发送到工作台</button>
+      <section class="result" id="resultBox">
+        请先打开你有权访问的商品列表页，再点击发送。
+      </section>
+      <footer>
+        只读取当前页面已渲染内容，不处理登录态，不绕过平台限制。
+      </footer>
+    </main>
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>

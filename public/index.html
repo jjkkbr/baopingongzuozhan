@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ad Replica Studio</title>
+    <link rel="icon" href="/assets/app-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="side-rail" aria-label="primary navigation">
+        <div class="rail-brand" aria-hidden="true">
+          <img src="/assets/app-icon.png" alt="" />
+        </div>
+        <nav class="rail-nav" aria-label="workspace sections">
+          <a class="rail-item is-active" href="#workspace" aria-label="工作台" title="工作台">
+            <span aria-hidden="true">▦</span>
+            <small>工作台</small>
+          </a>
+          <a class="rail-item" href="#products" aria-label="选品洞察" title="选品洞察">
+            <span aria-hidden="true">◎</span>
+            <small>选品</small>
+          </a>
+          <a class="rail-item" href="#ops" data-ops-nav="creative" aria-label="广告创编" title="广告创编">
+            <span aria-hidden="true">✦</span>
+            <small>创编</small>
+          </a>
+          <a class="rail-item" href="#audit" data-ops-nav="delivery" aria-label="合规审核" title="合规审核">
+            <span aria-hidden="true">✓</span>
+            <small>审核</small>
+          </a>
+          <a class="rail-item" href="#output" data-ops-nav="copy" aria-label="报表中心" title="报表中心">
+            <span aria-hidden="true">▤</span>
+            <small>导出</small>
+          </a>
+        </nav>
+        <div class="rail-user" title="AdOps 团队">
+          <span aria-hidden="true">人</span>
+          <small>AdOps</small>
+        </div>
+      </aside>
+
+      <section class="main-stage">
+        <header class="topbar">
+          <div class="brand-lockup">
+            <div class="brand-mark" aria-hidden="true">
+              <img src="/assets/app-icon.png" alt="" />
+            </div>
+            <div>
+              <p class="eyebrow">COMPLIANT AD OPS</p>
+              <div class="title-row">
+                <h1>爆品广告工作台</h1>
+                <span class="edition-pill">专业版</span>
+              </div>
+            </div>
+          </div>
+          <div class="top-actions" aria-label="system status">
+            <div class="status-strip">
+              <span class="status-dot"></span>
+              <span>数据已连接</span>
+            </div>
+            <button class="top-button" id="guideBtn" type="button">新手向导</button>
+            <button class="top-button" id="openOutputBtn" type="button">导出目录</button>
+            <button class="top-button" id="openExtensionBtn" type="button">插件目录</button>
+            <button class="mode-switch" id="authModeBtn" type="button" aria-pressed="true" title="只接收授权数据">
+              <span>授权数据模式</span>
+              <i aria-hidden="true"></i>
+            </button>
+          </div>
+        </header>
+
+        <section class="workspace" id="workspace">
+          <aside class="control-panel" aria-label="data controls">
+            <div class="panel-title tight">
+              <div>
+                <p class="eyebrow">DATA SOURCE</p>
+                <h2>数据源</h2>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="source">来源</label>
+              <select id="source">
+                <option value="sample">样例数据</option>
+                <option value="taobao">淘宝开放平台</option>
+                <option value="douyin">抖音授权数据</option>
+              </select>
+            </div>
+
+            <div class="field-group">
+              <label for="platform">平台</label>
+              <div class="segmented" role="group" aria-label="platform filter">
+                <button class="segment is-active" data-platform="all" type="button">全部</button>
+                <button class="segment" data-platform="taobao" type="button">淘宝</button>
+                <button class="segment" data-platform="douyin" type="button">抖音</button>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="keyword">关键词</label>
+              <input id="keyword" type="search" placeholder="类目 / 商品 / 店铺" />
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="limit">数量</label>
+                <input id="limit" type="number" min="1" max="50" value="10" />
+              </div>
+              <button class="icon-button primary" id="refreshBtn" type="button" aria-label="刷新榜单" title="刷新榜单">
+                <span aria-hidden="true">↻</span>
+              </button>
+            </div>
+
+            <div class="field-group">
+              <label for="csvInput">授权数据导入</label>
+              <textarea id="csvInput" rows="8" spellcheck="false" placeholder="CSV 表格，或粘贴你有权使用的商品列表文本/HTML"></textarea>
+              <div class="import-actions">
+                <button class="text-button" id="importBtn" type="button">导入 CSV</button>
+                <button class="text-button ghost" id="importHistoryBtn" type="button">导入历史销量</button>
+                <button class="text-button ghost" id="parseTextBtn" type="button">解析文本/HTML</button>
+                <button class="text-button ghost" id="loadExtensionBtn" type="button">读取插件数据</button>
+              </div>
+              <div class="quality-report" id="extensionQualityReport" hidden></div>
+            </div>
+
+            <section class="ai-settings" aria-label="AI settings">
+              <div class="panel-title compact">
+                <div>
+                  <p class="eyebrow">AI MODEL</p>
+                  <h2>大模型设置</h2>
+                </div>
+                <span class="ai-status" id="aiStatus">未配置</span>
+              </div>
+              <div class="field-group">
+                <label for="aiPreset">接口预设</label>
+                <select id="aiPreset">
+                  <option value="dashscope">阿里百炼 通用</option>
+                  <option value="dashscope-coding">阿里百炼 Coding 专属</option>
+                  <option value="custom">自定义</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="aiBaseUrl">Base URL</label>
+                <input id="aiBaseUrl" type="url" placeholder="https://dashscope.aliyuncs.com/compatible-mode/v1" />
+              </div>
+              <div class="field-row ai-row">
+                <div class="field-group">
+                  <label for="aiModel">模型</label>
+                  <select id="aiModel">
+                    <option value="qwen-plus">qwen-plus</option>
+                    <option value="qwen-turbo">qwen-turbo</option>
+                    <option value="qwen-max">qwen-max</option>
+                    <option value="qwen-long">qwen-long</option>
+                    <option value="qwen-vl-plus">qwen-vl-plus</option>
+                    <option value="qwen-vl-max">qwen-vl-max</option>
+                    <option value="qwen3-vl-plus">qwen3-vl-plus</option>
+                    <option value="qwen3-vl-flash">qwen3-vl-flash</option>
+                  </select>
+                </div>
+                <div class="field-group">
+                  <label for="aiTimeout">超时</label>
+                  <input id="aiTimeout" type="number" min="5000" max="120000" step="1000" value="20000" />
+                </div>
+              </div>
+              <div class="field-group">
+                <label for="aiApiKey">API Key</label>
+                <input id="aiApiKey" type="password" autocomplete="off" placeholder="首次填写后会自动记住" />
+              </div>
+              <label class="inline-check">
+                <input id="clearAiKey" type="checkbox" />
+                <span>清空已保存 Key</span>
+              </label>
+              <div class="ai-split-box">
+                <div class="ai-split-head">
+                  <strong>视觉模型</strong>
+                  <span class="ai-status mini" id="visualAiStatus">未配置</span>
+                </div>
+                <div class="field-group">
+                  <label for="visualAiBaseUrl">视觉 Base URL</label>
+                  <input id="visualAiBaseUrl" type="url" placeholder="https://dashscope.aliyuncs.com/compatible-mode/v1" />
+                </div>
+                <div class="field-row ai-row">
+                  <div class="field-group">
+                    <label for="visualAiModel">视觉模型</label>
+                    <select id="visualAiModel">
+                      <option value="qwen-vl-plus">qwen-vl-plus</option>
+                      <option value="qwen-vl-max">qwen-vl-max</option>
+                      <option value="qwen3-vl-plus">qwen3-vl-plus</option>
+                      <option value="qwen3-vl-flash">qwen3-vl-flash</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label>&nbsp;</label>
+                    <button class="text-button ghost compact-button" id="testVisualAiConfigBtn" type="button">测视觉</button>
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label for="visualAiApiKey">视觉 API Key</label>
+                  <input id="visualAiApiKey" type="password" autocomplete="off" placeholder="留空则共用上方 Key" />
+                </div>
+                <label class="inline-check">
+                  <input id="clearVisualAiKey" type="checkbox" />
+                  <span>清空已保存视觉 Key</span>
+                </label>
+              </div>
+              <div class="import-actions">
+                <button class="text-button" id="saveAiConfigBtn" type="button">保存 AI 设置</button>
+                <button class="text-button ghost" id="testAiConfigBtn" type="button">测试连接</button>
+              </div>
+              <div class="source-note ai-note" id="aiConfigNote">保存后，“分析素材”会自动追加 AI 洞察。</div>
+            </section>
+
+            <section class="rule-library" id="ruleLibrary" aria-label="compliance rule library">
+              <div class="panel-title compact">
+                <div>
+                  <p class="eyebrow">RULE LIBRARY</p>
+                  <h2>敏感词与品牌规则</h2>
+                </div>
+                <span class="rule-state" id="ruleLibraryState">未配置</span>
+              </div>
+              <div class="segmented rule-kind-switch" role="tablist" aria-label="rule kinds">
+                <button class="segment rule-kind is-active" data-rule-kind="sensitiveTerms" type="button">敏感词</button>
+                <button class="segment rule-kind" data-rule-kind="brandRules" type="button">品牌词</button>
+              </div>
+              <div class="rule-toolbar">
+                <button class="text-button ghost" id="ruleResetBtn" type="button">恢复默认</button>
+                <button class="text-button ghost" id="ruleImportBtn" type="button">导入规则</button>
+                <button class="text-button ghost" id="ruleExportBtn" type="button">导出规则</button>
+                <button class="text-button" id="ruleSaveBtn" type="button">保存规则</button>
+              </div>
+              <input id="ruleImportFile" type="file" accept="application/json,.json" hidden />
+              <div class="rule-import-preview" id="ruleImportPreview" hidden></div>
+              <div class="rule-section-head">
+                <span>默认规则</span>
+                <em id="ruleDefaultCount">0</em>
+              </div>
+              <div class="rule-list" id="ruleDefaultList"></div>
+              <div class="rule-section-head">
+                <span>自定义规则</span>
+                <em id="ruleCustomCount">0</em>
+              </div>
+              <div class="rule-list" id="ruleCustomList"></div>
+              <div class="rule-add">
+                <div class="rule-add-row">
+                  <div class="field-group compact-input">
+                    <label for="ruleTermInput">词条</label>
+                    <input id="ruleTermInput" type="text" placeholder="输入规则词条" />
+                  </div>
+                  <div class="field-group compact-input">
+                    <label for="ruleSeverityInput">风险</label>
+                    <select id="ruleSeverityInput">
+                      <option value="low">低风险</option>
+                      <option value="medium" selected>中风险</option>
+                      <option value="high">高风险</option>
+                    </select>
+                  </div>
+                  <div class="field-group compact-input rule-brand-status-field" id="ruleBrandStatusField" hidden>
+                    <label for="ruleBrandStatusInput">授权状态</label>
+                    <select id="ruleBrandStatusInput">
+                      <option value="risk" selected>需复核</option>
+                      <option value="authorized">已授权</option>
+                      <option value="pending_review">待复核</option>
+                      <option value="forbidden">不可用</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="rule-add-row rule-brand-scope-row" id="ruleBrandScopeRow" hidden>
+                  <div class="field-group compact-input">
+                    <label for="ruleBrandNamesInput">授权品牌</label>
+                    <input id="ruleBrandNamesInput" type="text" placeholder="品牌A,品牌B" />
+                  </div>
+                  <div class="field-group compact-input">
+                    <label for="ruleBrandChannelsInput">授权渠道</label>
+                    <input id="ruleBrandChannelsInput" type="text" placeholder="taobao,douyin，可选" />
+                  </div>
+                </div>
+                <div class="rule-add-row rule-brand-scope-row" id="ruleBrandScopeRow2" hidden>
+                  <div class="field-group compact-input">
+                    <label for="ruleBrandRegionsInput">授权地区</label>
+                    <input id="ruleBrandRegionsInput" type="text" placeholder="cn,global，可选" />
+                  </div>
+                  <div class="field-group compact-input">
+                    <label for="ruleBrandExpiresInput">有效期至</label>
+                    <input id="ruleBrandExpiresInput" type="date" />
+                  </div>
+                </div>
+                <div class="rule-add-row rule-brand-scope-row" id="ruleBrandScopeRow3" hidden>
+                  <div class="field-group compact-input">
+                    <label for="ruleBrandCampaignInput">授权活动</label>
+                    <input id="ruleBrandCampaignInput" type="text" placeholder="大促/项目名，可选" />
+                  </div>
+                  <div class="field-group compact-input">
+                    <label for="ruleBrandReferenceInput">凭证引用</label>
+                    <input id="ruleBrandReferenceInput" type="text" placeholder="合同编号/台账编号，可选" />
+                  </div>
+                </div>
+                <div class="rule-add-row">
+                  <div class="field-group compact-input">
+                    <label for="ruleReplacementInput">替换建议</label>
+                    <input id="ruleReplacementInput" type="text" placeholder="可选" />
+                  </div>
+                  <div class="field-group compact-input">
+                    <label for="ruleNoteInput">备注</label>
+                    <input id="ruleNoteInput" type="text" placeholder="可选" />
+                  </div>
+                </div>
+                <div class="rule-add-row scope-row">
+                  <div class="field-group compact-input">
+                    <label for="rulePlatformInput">平台范围</label>
+                    <input id="rulePlatformInput" type="text" placeholder="taobao,douyin，可选" />
+                  </div>
+                  <div class="field-group compact-input">
+                    <label for="ruleCategoryInput">类目范围</label>
+                    <input id="ruleCategoryInput" type="text" placeholder="个护,家居，可选" />
+                  </div>
+                  <button class="icon-button primary" id="ruleAddBtn" type="button" aria-label="添加规则" title="添加规则">+</button>
+                </div>
+              </div>
+              <div class="rule-section-head">
+                <span>版本快照</span>
+                <em>最多 12 个</em>
+              </div>
+              <div class="rule-snapshot-list" id="ruleSnapshotList"></div>
+            </section>
+
+            <div class="source-note" id="sourceNote">示例数据可直接生成方案；真实数据需配置开放平台密钥或上传授权导出。</div>
+          </aside>
+
+          <section class="rank-panel" id="products" aria-label="product ranking">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">TOP SELLERS</p>
+                <h2>销量榜</h2>
+              </div>
+              <span id="productCount">0</span>
+            </div>
+            <div class="batch-strip" aria-label="batch selection">
+              <span id="batchSelectionStatus">未选择</span>
+              <div class="batch-strip-actions">
+                <button class="text-button ghost" id="batchSelectAllBtn" type="button">全选</button>
+                <button class="text-button ghost" id="batchClearBtn" type="button">清空</button>
+              </div>
+            </div>
+            <div class="product-list" id="productList"></div>
+          </section>
+
+          <section class="workspace-main" aria-label="main workspace">
+          <section class="hero-panel" aria-label="product preview">
+            <div class="media-stage" id="mediaStage"></div>
+            <div class="media-thumbs" id="mediaThumbs" aria-label="media thumbnails"></div>
+          </section>
+
+          <section class="product-panel" aria-label="selected product">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">PRODUCT</p>
+                <h2 id="selectedTitle">请选择商品</h2>
+              </div>
+              <span id="selectedScore">--</span>
+            </div>
+            <dl class="metric-grid">
+              <div>
+                <dt>价格</dt>
+                <dd id="selectedPrice">--</dd>
+              </div>
+              <div>
+                <dt>销量</dt>
+                <dd id="selectedSales">--</dd>
+              </div>
+              <div>
+                <dt>佣金</dt>
+                <dd id="selectedCommission">--</dd>
+              </div>
+              <div>
+                <dt>类目</dt>
+                <dd id="selectedCategory">--</dd>
+              </div>
+            </dl>
+            <div class="tag-row" id="sellingPoints"></div>
+            <div class="trend-card">
+              <div class="trend-head">
+                <span>销量趋势</span>
+                <em id="trendPeriod">无历史</em>
+              </div>
+              <div class="trend-chart" id="trendChart"></div>
+            </div>
+          </section>
+
+          <section class="ops-panel" id="ops" aria-label="creative operations">
+            <div class="ops-tabs" aria-label="creative workflow">
+              <button class="ops-tab is-active" data-ops-tab="creative" type="button">创意生成</button>
+              <button class="ops-tab" data-ops-tab="copy" type="button">文案优化</button>
+              <button class="ops-tab" data-ops-tab="insight" type="button">素材洞察</button>
+              <button class="ops-tab" data-ops-tab="delivery" type="button">投放建议</button>
+            </div>
+            <div class="ops-tab-panel creative-panel is-active" data-ops-panel="creative">
+              <section class="generator-panel">
+                <div class="tool-row">
+                  <div class="field-group compact-input">
+                    <label for="format">形式</label>
+                    <select id="format">
+                      <option value="short_video">短视频</option>
+                      <option value="poster">海报图</option>
+                    </select>
+                  </div>
+                  <div class="field-group compact-input">
+                    <label for="tone">语气</label>
+                    <select id="tone">
+                      <option value="direct">直接转化</option>
+                      <option value="urgent">热卖紧迫</option>
+                      <option value="premium">质感表达</option>
+                    </select>
+                  </div>
+                  <button class="icon-button" id="analyzeBtn" type="button" aria-label="分析素材" title="分析素材">◎</button>
+                  <button class="icon-button primary" id="generateBtn" type="button" aria-label="生成广告方案" title="生成广告方案">✦</button>
+                  <button class="icon-button" id="auditBtn" type="button" aria-label="合规审核" title="合规审核">✓</button>
+                </div>
+                <div class="generate-action">
+                  <span>选择商品后生成原创方案</span>
+                </div>
+              </section>
+            </div>
+            <div class="ops-tab-panel insight-panel" data-ops-panel="insight" hidden>
+              <section class="analysis-panel">
+                <div class="panel-title compact">
+                  <div>
+                    <p class="eyebrow">MATERIAL INSIGHT</p>
+                    <h2>素材洞察</h2>
+                  </div>
+                  <button class="text-button ghost compact-button" id="visualBtn" type="button">视觉分析</button>
+                </div>
+                <div class="analysis-box" id="analysisBox"></div>
+              </section>
+            </div>
+            <div class="ops-tab-panel copy-panel" data-ops-panel="copy" hidden>
+              <section class="output-panel" id="output" aria-label="copy optimization output">
+                <div class="panel-title compact">
+                  <div>
+                    <p class="eyebrow">COPY OPTIMIZATION</p>
+                    <h2>文案优化</h2>
+                  </div>
+                  <button class="text-button ghost" id="exportBtn" type="button">导出 JSON</button>
+                </div>
+                <div class="output-content" id="outputContent"></div>
+              </section>
+            </div>
+            <div class="ops-tab-panel delivery-panel" data-ops-panel="delivery" hidden>
+              <section class="audit-panel" id="audit" aria-label="compliance audit">
+                <div class="panel-title compact">
+                  <div>
+                    <p class="eyebrow">DELIVERY REVIEW</p>
+                    <h2>投放建议</h2>
+                  </div>
+                  <span id="auditScore">--</span>
+                </div>
+                <div class="audit-box" id="auditBox"></div>
+                <div class="credential-panel" aria-label="authorization credentials">
+                  <div class="panel-title compact">
+                    <div>
+                      <p class="eyebrow">EVIDENCE LEDGER</p>
+                      <h2>授权凭证</h2>
+                    </div>
+                    <button class="text-button ghost compact-button" id="credentialExportBtn" type="button">导出台账</button>
+                  </div>
+                  <div class="credential-form">
+                    <div class="field-group compact-input">
+                      <label for="credentialTitle">凭证名称</label>
+                      <input id="credentialTitle" type="text" placeholder="后台导出 / 授权截图" />
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="credentialType">类型</label>
+                      <select id="credentialType">
+                        <option value="merchant_export">商家后台导出</option>
+                        <option value="official_api">官方开放平台</option>
+                        <option value="page_screenshot">页面截图</option>
+                        <option value="creator_authorization">达人/商家授权</option>
+                        <option value="internal_data">内部投放数据</option>
+                        <option value="authorization_file">授权文件</option>
+                        <option value="other">其他</option>
+                      </select>
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="credentialReference">引用</label>
+                      <input id="credentialReference" type="text" placeholder="文件名 / URL / 记录编号" />
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="credentialReviewer">审核人</label>
+                      <input id="credentialReviewer" type="text" placeholder="可选" />
+                    </div>
+                    <button class="text-button" id="credentialAddBtn" type="button">登记</button>
+                  </div>
+                  <div class="credential-history" id="credentialHistory"></div>
+                </div>
+                <div class="credential-panel" aria-label="material rights">
+                  <div class="panel-title compact">
+                    <div>
+                      <p class="eyebrow">MATERIAL RIGHTS</p>
+                      <h2>素材版权</h2>
+                    </div>
+                    <button class="text-button ghost compact-button" id="materialRightExportBtn" type="button">导出台账</button>
+                  </div>
+                  <div class="credential-form material-right-form">
+                    <div class="field-group compact-input">
+                      <label for="materialRightTitle">素材名称</label>
+                      <input id="materialRightTitle" type="text" placeholder="主图拍摄 / BGM 授权" />
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="materialRightType">类型</label>
+                      <select id="materialRightType">
+                        <option value="image">图片</option>
+                        <option value="video">视频</option>
+                        <option value="music">音乐</option>
+                        <option value="font">字体</option>
+                        <option value="portrait">肖像</option>
+                        <option value="logo">Logo</option>
+                        <option value="product_shoot">产品拍摄</option>
+                        <option value="other">其他</option>
+                      </select>
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="materialRightSource">来源</label>
+                      <select id="materialRightSource">
+                        <option value="self_produced">自有制作</option>
+                        <option value="brand_library">品牌素材库</option>
+                        <option value="merchant_authorized">商家授权</option>
+                        <option value="stock_license">图库/素材库许可</option>
+                        <option value="creator_authorized">达人/创作者授权</option>
+                        <option value="platform_material">平台素材</option>
+                        <option value="agency_produced">代理商制作</option>
+                        <option value="other">其他</option>
+                      </select>
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="materialRightScope">范围</label>
+                      <select id="materialRightScope">
+                        <option value="ecommerce_ads">电商广告</option>
+                        <option value="all_ads">全广告投放</option>
+                        <option value="social_ads">社媒广告</option>
+                        <option value="single_campaign">单次活动</option>
+                        <option value="internal_review">内部复核</option>
+                        <option value="other">其他</option>
+                      </select>
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="materialRightReference">引用</label>
+                      <input id="materialRightReference" type="text" placeholder="授权编号 / 文件名 / URL" />
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="materialRightAttachments">附件引用</label>
+                      <input id="materialRightAttachments" type="text" placeholder="合同编号 / 网盘路径 / 截图编号" />
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="materialRightExpiresAt">到期</label>
+                      <input id="materialRightExpiresAt" type="date" />
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="materialRightBrandNames">品牌范围</label>
+                      <input id="materialRightBrandNames" type="text" placeholder="品牌名，可逗号分隔" />
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="materialRightBrandStatus">品牌授权</label>
+                      <select id="materialRightBrandStatus">
+                        <option value="not_applicable">不涉及品牌</option>
+                        <option value="authorized">已授权</option>
+                        <option value="limited">有限授权</option>
+                        <option value="pending_review">待复核</option>
+                        <option value="forbidden">不可使用</option>
+                      </select>
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="materialRightChannels">渠道</label>
+                      <input id="materialRightChannels" type="text" placeholder="抖音 / 淘宝 / 信息流" />
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="materialRightRegions">地域</label>
+                      <input id="materialRightRegions" type="text" placeholder="中国大陆 / 全区域" />
+                    </div>
+                    <div class="field-group compact-input wide">
+                      <label for="materialRightCampaign">活动范围</label>
+                      <input id="materialRightCampaign" type="text" placeholder="618 大促 / 单次投放 / 长期素材库" />
+                    </div>
+                    <div class="field-group compact-input">
+                      <label for="materialRightReviewer">审核人</label>
+                      <input id="materialRightReviewer" type="text" placeholder="可选" />
+                    </div>
+                    <button class="text-button" id="materialRightAddBtn" type="button">登记</button>
+                  </div>
+                  <div class="credential-history" id="materialRightHistory"></div>
+                </div>
+                <div class="audit-history-panel" aria-label="audit history">
+                  <div class="panel-title compact">
+                    <div>
+                      <p class="eyebrow">AUDIT LOG</p>
+                      <h2>审核留痕</h2>
+                    </div>
+                    <button class="text-button ghost compact-button" id="auditExportBtn" type="button">导出记录</button>
+                  </div>
+                  <div class="audit-history" id="auditHistory"></div>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="batch-panel" id="batch" aria-label="batch operations">
+            <div class="panel-title compact">
+              <div>
+                <p class="eyebrow">BATCH QUEUE</p>
+                <h2>批量任务</h2>
+              </div>
+              <span class="batch-pill" id="batchQueueState">待命</span>
+            </div>
+            <div class="batch-toolbar" aria-label="batch actions">
+              <button class="text-button" id="batchGenerateBtn" type="button">批量生成</button>
+              <button class="text-button ghost" id="batchAuditBtn" type="button">批量审核</button>
+            </div>
+            <div class="batch-filter" aria-label="batch filters">
+              <div class="field-group compact-input">
+                <label for="batchSearchInput">任务搜索</label>
+                <input id="batchSearchInput" type="search" placeholder="商品 / 任务 / 来源" />
+              </div>
+              <div class="field-group compact-input">
+                <label for="batchStatusFilter">状态</label>
+                <select id="batchStatusFilter">
+                  <option value="all">全部</option>
+                  <option value="queued">排队</option>
+                  <option value="running">处理中</option>
+                  <option value="completed">已完成</option>
+                  <option value="failed">失败</option>
+                  <option value="cancelled">已取消</option>
+                  <option value="archived">已归档</option>
+                </select>
+              </div>
+              <label class="inline-check batch-archive-toggle">
+                <input id="batchIncludeArchived" type="checkbox" />
+                <span>含归档</span>
+              </label>
+            </div>
+            <div class="batch-limit-note" id="batchLimitNote"></div>
+            <div class="batch-grid">
+              <div class="batch-history" id="batchHistory"></div>
+              <div class="batch-detail" id="batchDetail"></div>
+            </div>
+          </section>
+          </section>
+        </section>
+      </section>
+
+      <section class="activity-toast" id="activityToast" aria-live="polite" role="status" hidden>
+        <span class="activity-spinner" aria-hidden="true"></span>
+        <span class="activity-check" aria-hidden="true"></span>
+        <span class="activity-error" aria-hidden="true"></span>
+        <span class="activity-copy">
+          <strong id="activityTitle">正在处理</strong>
+          <small id="activityDetail">请稍候</small>
+        </span>
+      </section>
+
+      <section class="guide-modal" id="guideModal" aria-modal="true" aria-labelledby="guideTitle" role="dialog" hidden>
+        <div class="guide-card">
+          <div class="guide-head">
+            <div>
+              <p class="eyebrow">FIRST RUN</p>
+              <h2 id="guideTitle">首次启动向导</h2>
+            </div>
+            <button class="icon-button" id="guideCloseBtn" type="button" aria-label="关闭向导" title="关闭向导">×</button>
+          </div>
+          <div class="guide-steps">
+            <article class="guide-step">
+              <span>1</span>
+              <div>
+                <h3>配置 AI Key</h3>
+                <p>选择“阿里百炼 Coding 专属”或通用接口，保存 Key 后点击“测试连接”。完整 Key 只保存在本机。</p>
+              </div>
+            </article>
+            <article class="guide-step">
+              <span>2</span>
+              <div>
+                <h3>安装 Edge 插件</h3>
+                <p>打开插件目录，在 Edge 的扩展页面加载 `edge-extension`，只读取当前已授权页面的已渲染内容。</p>
+              </div>
+            </article>
+            <article class="guide-step">
+              <span>3</span>
+              <div>
+                <h3>导入授权商品</h3>
+                <p>粘贴 CSV、授权文本/HTML，或从插件读取商品卡片。发布前保留授权记录和后台截图。</p>
+              </div>
+            </article>
+            <article class="guide-step">
+              <span>4</span>
+              <div>
+                <h3>生成并审核</h3>
+                <p>选择商品后运行分析、生成广告方案和合规审核，再导出 JSON 到本地目录。</p>
+              </div>
+            </article>
+          </div>
+          <div class="guide-actions">
+            <button class="text-button ghost" id="guideOpenExtensionBtn" type="button">打开插件目录</button>
+            <button class="text-button ghost" id="guideOpenOutputBtn" type="button">打开导出目录</button>
+            <button class="text-button" id="guideDoneBtn" type="button">开始使用</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,59 @@
+{
+  "name": "ad-replica-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A compliant MVP for discovering top-selling products, analyzing ad media, and generating original promotion concepts.",
+  "type": "module",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "desktop": "electron .",
+    "pack": "electron-builder --config electron-builder.config.cjs --dir",
+    "dist": "electron-builder --config electron-builder.config.cjs --win nsis",
+    "dist:signed": "set \"CODE_SIGNING_REQUIRED=1\"&& electron-builder --config electron-builder.config.cjs --win nsis"
+  },
+  "build": {
+    "appId": "com.local.adreplicastudio",
+    "productName": "爆品广告工作台",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "desktop/**/*",
+      "src/**/*",
+      "public/**/*",
+      "data/products.sample.json",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "edge-extension",
+        "to": "edge-extension",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "爆品广告工作台"
+    }
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
