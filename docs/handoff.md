@@ -41,7 +41,7 @@
 
 注意：当前安装包尚未配置正式代码签名证书，Windows 安装时仍可能提示未知发布者；`release/` 是本机构建产物目录，不提交到 GitHub。
 
-2026-06-10 已补充 `v0.1.0` 测试版发布准备：真实安装链路验证通过，安装器静默安装返回 `0`，已安装主程序启动后 `http://127.0.0.1:4173` 返回 200，运行数据写入用户数据目录，卸载器静默卸载返回 `0`，卸载后测试安装目录无残留文件且 4173 端口无占用。GitHub Release 草稿已写入 `docs/releases/v0.1.0.md`。本机未安装 GitHub CLI，因此还没有自动创建 Release 附件上传；如需正式发布，请在 GitHub 页面创建 `v0.1.0` Release，并上传本地 `release/爆品广告工作台 Setup 0.1.0.exe`。
+2026-06-10 已补充 `v0.1.0` 测试版发布准备并创建 GitHub Release：真实安装链路验证通过，安装器静默安装返回 `0`，已安装主程序启动后 `http://127.0.0.1:4173` 返回 200，运行数据写入用户数据目录，卸载器静默卸载返回 `0`，卸载后测试安装目录无残留文件且 4173 端口无占用。GitHub Release 草稿已写入 `docs/releases/v0.1.0.md`，线上 Release 地址为 `https://github.com/jjkkbr/baopingongzuozhan/releases/tag/v0.1.0`，附件文件名为 `baopin-workbench-setup-0.1.0.exe`。
 
 ## 环境
 

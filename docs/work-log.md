@@ -44,7 +44,10 @@ npm.cmd run dist
 继续推进测试版发布流程，补充真实安装链路验证和 GitHub Release 草稿。
 
 已完成：
-- 本机未安装 GitHub CLI，暂无法直接用 `gh release create` 自动创建 GitHub Release 和上传附件。
+- 已通过 `winget install --id GitHub.cli` 安装 GitHub CLI 2.93.0。
+- 使用本机 GitHub 凭证通过临时 `GH_TOKEN` 创建 GitHub Release，未把 Token 写入代码、文档或仓库。
+- 已创建 `v0.1.0` GitHub Release，地址为 `https://github.com/jjkkbr/baopingongzuozhan/releases/tag/v0.1.0`，并标记为 prerelease。
+- 已上传安装包附件 `baopin-workbench-setup-0.1.0.exe`，大小 79,894,502 字节。
 - 新增 `docs/releases/v0.1.0.md`，整理 GitHub Release 草稿，包含发布定位、下载文件、主要功能、安装方式、AI Key 配置、Edge 插件加载、安装测试记录、已知问题和合规边界。
 - 使用当前安装包执行静默安装测试，安装目录为 `output/install-smoke/BaopinWorkbench`，安装器返回 `0`。
 - 确认已安装目录包含主程序、卸载程序和 `resources/edge-extension/manifest.json`。
