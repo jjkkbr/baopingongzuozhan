@@ -1,5 +1,40 @@
 # 工作日志
 
+## 2026-06-11
+
+### Electron 依赖升级和 v0.1.1 测试版准备
+
+继续发布质量收口，优先处理 `npm audit` 暴露的 Electron / electron-builder 安全依赖问题，并把验证流程固化成脚本和 GitHub Actions。
+
+已完成：
+- 将项目版本从 `0.1.0` 升级到 `0.1.1`。
+- 将 `electron` 从 `31.7.7` 升级到 `42.4.0`。
+- 将 `electron-builder` 从 `24.13.3` 升级到 `26.15.2`。
+- 新增 `npm.cmd run verify`、`verify:syntax`、`verify:edge` 和 `verify:ui`。
+- 新增 `.github/workflows/verify.yml`，push 和 PR 时自动执行 `npm ci`、`npm run verify` 和 `npm audit --audit-level=high`。
+- 修复 electron-builder 26 的配置兼容性：签名证书主题和 SHA1 通过 `win.signtoolOptions` 注入，未配置证书时不输出空签名字段。
+- 调整 `dist` / `dist:signed` 脚本，Windows 目标从配置读取，避免新版 CLI schema 解析问题。
+- 重新构建 `0.1.1` Windows NSIS 测试安装包：`release/爆品广告工作台 Setup 0.1.1.exe`。
+- 安装包大小为 104,144,532 字节，SHA256 为 `E7A02E7918FF1423821618E9D97020C6EA18D93924BE151E7F5CB0992A6ACDA1`。
+- 免安装版启动冒烟通过：`http://127.0.0.1:4173` 返回 200，页面可识别，运行数据仍写入 `C:\Users\123\AppData\Roaming\爆品广告工作台`。
+- 安装包真实链路验证通过：静默安装返回 `0`，已安装主程序启动返回 200，静默卸载返回 `0`，卸载后测试安装目录无残留文件且 4173 端口无占用。
+
+验证记录：
+```powershell
+npm.cmd install
+npm.cmd run verify
+npm.cmd audit --audit-level=high
+npm.cmd outdated --json
+npm.cmd run verify:ui
+$env:ELECTRON_MIRROR="https://npmmirror.com/mirrors/electron/"
+npm.cmd run dist
+```
+
+注意事项：
+- 当前安装包仍未配置正式代码签名证书，Windows 安装时可能提示未知发布者。
+- Electron 42 打包体积比 31 增大，`0.1.1` 安装包约 99MB；后续可评估是否需要压缩策略或裁剪资源。
+- 后续若继续发版，建议保持“更新文档 -> 提交 -> 打 tag -> 创建 Release -> 上传安装包和 SHA256”的顺序。
+
 ## 2026-06-10
 
 ### Windows 测试安装包构建和冒烟验证

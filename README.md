@@ -54,6 +54,28 @@ npm.cmd run desktop
 
 如果 PowerShell 阻止 `npm.ps1`，优先使用 `npm.cmd`。AI Key 请在工作台左侧“大模型设置”里保存，或只放在本机环境变量中；不要写入代码、README、前端文件或可提交配置。之前在聊天里暴露过的 Key 应先到服务商后台作废，再重新生成新 Key。
 
+## 测试版下载
+
+当前测试版：
+
+```text
+https://github.com/jjkkbr/baopingongzuozhan/releases/tag/v0.1.1
+```
+
+安装包附件：
+
+```text
+baopin-workbench-setup-0.1.1.exe
+```
+
+SHA256：
+
+```text
+E7A02E7918FF1423821618E9D97020C6EA18D93924BE151E7F5CB0992A6ACDA1
+```
+
+当前测试安装包尚未配置正式代码签名证书，Windows 安装时可能提示“未知发布者”。
+
 ## 启动
 
 ```powershell
@@ -99,7 +121,7 @@ npm.cmd run dist:signed
 当前安装包输出路径：
 
 ```text
-release/爆品广告工作台 Setup 0.1.0.exe
+release/爆品广告工作台 Setup 0.1.1.exe
 ```
 
 免安装版可执行文件：
@@ -142,12 +164,14 @@ rg -n --hidden -S `
 如需发布桌面安装包，先跑基础检查：
 
 ```powershell
-node --check src\server.js
-node --check public\app.js
-node --check desktop\main.cjs
-node --check edge-extension\popup.js
-node --check scripts\verify-edge-extension.mjs
-node scripts\verify-edge-extension.mjs
+npm.cmd run verify
+npm.cmd audit --audit-level=high
+```
+
+涉及前端主流程时，先启动服务再跑：
+
+```powershell
+npm.cmd run verify:ui
 ```
 
 本地私有文件已经被 `.gitignore` 排除，包括 `data/*.local.json`、`.env`、`output/`、`release/`、日志文件和 Edge 临时目录。不要用 `git add -f` 强行提交这些文件。

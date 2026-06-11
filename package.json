@@ -1,17 +1,22 @@
 {
   "name": "ad-replica-studio",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "A compliant MVP for discovering top-selling products, analyzing ad media, and generating original promotion concepts.",
+  "author": "jjkkbr",
   "type": "module",
   "main": "desktop/main.cjs",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node src/server.js",
     "desktop": "electron .",
+    "verify:syntax": "node --check src/server.js && node --check public/app.js && node --check desktop/main.cjs && node --check edge-extension/popup.js && node --check scripts/verify-edge-extension.mjs && node --check scripts/verify-ui.mjs",
+    "verify:edge": "node scripts/verify-edge-extension.mjs",
+    "verify:ui": "node scripts/verify-ui.mjs http://127.0.0.1:4173",
+    "verify": "npm run verify:syntax && npm run verify:edge",
     "pack": "electron-builder --config electron-builder.config.cjs --dir",
-    "dist": "electron-builder --config electron-builder.config.cjs --win nsis",
-    "dist:signed": "set \"CODE_SIGNING_REQUIRED=1\"&& electron-builder --config electron-builder.config.cjs --win nsis"
+    "dist": "electron-builder --config electron-builder.config.cjs --win",
+    "dist:signed": "set \"CODE_SIGNING_REQUIRED=1\"&& electron-builder --config electron-builder.config.cjs --win"
   },
   "build": {
     "appId": "com.local.adreplicastudio",
@@ -50,8 +55,8 @@
     }
   },
   "devDependencies": {
-    "electron": "^31.7.7",
-    "electron-builder": "^24.13.3"
+    "electron": "^42.4.0",
+    "electron-builder": "^26.15.2"
   },
   "engines": {
     "node": ">=20"

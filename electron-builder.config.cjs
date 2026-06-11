@@ -4,7 +4,7 @@ const baseBuild = packageJson.build ?? {};
 const baseWin = baseBuild.win ?? {};
 const baseNsis = baseBuild.nsis ?? {};
 const productName = baseBuild.productName ?? packageJson.productName ?? '爆品广告工作台';
-const version = packageJson.version ?? '0.1.0';
+const version = packageJson.version ?? '0.1.1';
 
 const cscLink = process.env.CSC_LINK || process.env.WIN_CSC_LINK || null;
 const cscKeyPassword = process.env.CSC_KEY_PASSWORD || process.env.WIN_CSC_KEY_PASSWORD || null;
@@ -19,18 +19,26 @@ if (requireCodeSigning && !cscLink && !certificateSubjectName && !certificateSha
   );
 }
 
+const winConfig = {
+  ...baseWin,
+  icon: baseWin.icon ?? 'build/icon.ico',
+  target: baseWin.target ?? ['nsis']
+};
+
+if (certificateSubjectName || certificateSha1) {
+  winConfig.signtoolOptions = {
+    ...(baseWin.signtoolOptions ?? {}),
+    ...(certificateSubjectName ? { certificateSubjectName } : {}),
+    ...(certificateSha1 ? { certificateSha1 } : {})
+  };
+}
+
 module.exports = {
   ...baseBuild,
-  cscLink: cscLink ?? baseBuild.cscLink,
-  cscKeyPassword: cscKeyPassword ?? baseBuild.cscKeyPassword,
+  ...(cscLink || baseBuild.cscLink ? { cscLink: cscLink ?? baseBuild.cscLink } : {}),
+  ...(cscKeyPassword || baseBuild.cscKeyPassword ? { cscKeyPassword: cscKeyPassword ?? baseBuild.cscKeyPassword } : {}),
   forceCodeSigning: requireCodeSigning || baseBuild.forceCodeSigning || false,
-  win: {
-    ...baseWin,
-    icon: baseWin.icon ?? 'build/icon.ico',
-    target: baseWin.target ?? ['nsis'],
-    certificateSubjectName: certificateSubjectName ?? baseWin.certificateSubjectName,
-    certificateSha1: certificateSha1 ?? baseWin.certificateSha1
-  },
+  win: winConfig,
   nsis: {
     ...baseNsis,
     oneClick: false,

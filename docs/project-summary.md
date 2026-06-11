@@ -66,6 +66,7 @@
 - Windows 免安装版和 NSIS 安装包构建。
 - 2026-06-10 已重新构建 Windows 测试安装包和免安装版，并完成桌面冒烟验证；当前安装包未签名，Windows 仍可能提示未知发布者。
 - 2026-06-10 已创建 GitHub `v0.1.0` 测试版 Release，并上传安装包附件 `baopin-workbench-setup-0.1.0.exe`。
+- 2026-06-11 已升级 Electron 到 `42.4.0`、electron-builder 到 `26.15.2`，新增一键验证脚本和 GitHub Actions，并构建 `v0.1.1` 测试安装包；`npm audit --audit-level=high` 当前为 0 漏洞。
 
 ## 关键文件
 
@@ -127,9 +128,9 @@ npm.cmd run dist:signed
 当前构建产物：
 
 - `release/win-unpacked/爆品广告工作台.exe`
-- `release/爆品广告工作台 Setup 0.1.0.exe`
+- `release/爆品广告工作台 Setup 0.1.1.exe`
 
-注意：当前 `release/` 中已有构建产物可能早于 UI 和图标更新。要让安装包、免安装版和任务栏图标体现最新改动，需要重新运行打包命令。
+注意：`release/` 是本机构建产物目录，不提交到 GitHub。后续修改 UI、图标、桌面壳或依赖后，需要重新运行打包命令并重新做安装冒烟测试。
 
 2026-05-19 已重新运行 `npm.cmd run dist`，当前安装包和免安装版已包含最新 UI、正式图标、首次启动向导、目录快捷按钮和桌面端 `127.0.0.1` 加载修复。
 
@@ -192,11 +193,21 @@ npm.cmd run dist:signed
 最近一次改动后已运行：
 
 ```powershell
-node --check public\app.js
-node --check src\server.js
-node --check desktop\main.cjs
-node scripts\verify-ui.mjs http://127.0.0.1:4173
+npm.cmd run verify
+npm.cmd audit --audit-level=high
+npm.cmd run verify:ui
 ```
+
+2026-06-11 依赖升级和重新打包验证：
+
+- `electron` 已升级到 `42.4.0`，`electron-builder` 已升级到 `26.15.2`。
+- `npm.cmd run verify` 通过，Edge fixture 识别 10/10 个商品。
+- `npm.cmd audit --audit-level=high` 返回 0 漏洞。
+- `npm.cmd outdated --json` 返回空对象。
+- `npm.cmd run verify:ui` 通过，页面回归 `ok: true`，控制台无错误。
+- `npm.cmd run dist` 成功生成 `release/爆品广告工作台 Setup 0.1.1.exe` 和 `release/win-unpacked/爆品广告工作台.exe`。
+- `0.1.1` 免安装版和安装版均已启动验证，`http://127.0.0.1:4173` 返回 200。
+- `0.1.1` 静默安装和卸载均返回 0，卸载后测试安装目录无残留文件且 4173 端口无占用。
 
 2026-05-19 重新打包后验证：
 

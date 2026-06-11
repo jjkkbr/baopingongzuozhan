@@ -73,7 +73,11 @@ npm.cmd run dist:signed
 ```
 
 ```powershell
-node scripts\verify-ui.mjs http://localhost:4173
+npm.cmd run verify
+```
+
+```powershell
+npm.cmd run verify:ui
 ```
 
 PowerShell 可能阻止 `npm.ps1`，优先使用 `npm.cmd`。
@@ -83,8 +87,7 @@ PowerShell 可能阻止 `npm.ps1`，优先使用 `npm.cmd`。
 改动后至少运行相关检查：
 
 ```powershell
-node --check src\server.js
-node --check public\app.js
+npm.cmd run verify
 ```
 
 涉及桌面壳时：
@@ -109,7 +112,7 @@ node scripts\verify-edge-extension.mjs
 涉及前端主流程时：
 
 ```powershell
-node scripts\verify-ui.mjs http://localhost:4173
+npm.cmd run verify:ui
 ```
 
 涉及打包时：
@@ -168,6 +171,7 @@ npm.cmd run dist
 - 桌面版运行数据必须写入 `app.getPath('userData')`，不要写入安装目录。
 - 安装包输出目录是 `release/`，不要提交构建产物。
 - Windows 打包配置入口是 `electron-builder.config.cjs`；默认 `npm.cmd run dist` 可生成未签名测试包，`npm.cmd run dist:signed` 会要求签名证书并在缺失时提前失败。
+- 当前使用 Electron `42.4.0` 和 electron-builder `26.15.2`；electron-builder 26 的 Windows 证书主题和 SHA1 需要写入 `win.signtoolOptions`，不要把空的 `certificateSubjectName` / `certificateSha1` 直接放在 `win` 顶层。
 - 代码签名证书只能通过环境变量传入，例如 `WIN_CSC_LINK` / `WIN_CSC_KEY_PASSWORD` 或 `CSC_LINK` / `CSC_KEY_PASSWORD`，不要写入代码或文档。
 - 当前本机尚未提供正式签名证书，默认安装包仍可能显示未知发布者；图标已接入代码，但安装包需要重新构建后才会更新。
 

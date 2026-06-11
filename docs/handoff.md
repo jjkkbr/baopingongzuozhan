@@ -30,7 +30,7 @@
 
 最新可执行文件：
 
-- 安装包：`release/爆品广告工作台 Setup 0.1.0.exe`
+- 安装包：`release/爆品广告工作台 Setup 0.1.1.exe`
 - 免安装版：`release/win-unpacked/爆品广告工作台.exe`
 
 2026-05-19 已重新运行 `npm.cmd run dist`，当前 `release/` 产物已包含最新 UI、正式图标、首次启动向导、目录快捷按钮、`127.0.0.1` 桌面加载修复和 AI Coding 专属预设。
@@ -43,13 +43,15 @@
 
 2026-06-10 已补充 `v0.1.0` 测试版发布准备并创建 GitHub Release：真实安装链路验证通过，安装器静默安装返回 `0`，已安装主程序启动后 `http://127.0.0.1:4173` 返回 200，运行数据写入用户数据目录，卸载器静默卸载返回 `0`，卸载后测试安装目录无残留文件且 4173 端口无占用。GitHub Release 草稿已写入 `docs/releases/v0.1.0.md`，线上 Release 地址为 `https://github.com/jjkkbr/baopingongzuozhan/releases/tag/v0.1.0`，附件文件名为 `baopin-workbench-setup-0.1.0.exe`。
 
+2026-06-11 已升级 Electron 到 `42.4.0`、electron-builder 到 `26.15.2`，新增 `npm.cmd run verify` 与 GitHub Actions 自动验证，并发布 `v0.1.1` 测试版。线上 Release 地址为 `https://github.com/jjkkbr/baopingongzuozhan/releases/tag/v0.1.1`，附件文件名为 `baopin-workbench-setup-0.1.1.exe`。`npm audit --audit-level=high` 当前为 0 漏洞，`0.1.1` 安装包 SHA256 为 `E7A02E7918FF1423821618E9D97020C6EA18D93924BE151E7F5CB0992A6ACDA1`。
+
 ## 环境
 
 - Windows
 - Node.js >= 20
 - npm 使用 `npm.cmd`，因为 PowerShell 执行策略可能阻止 `npm.ps1`
-- Electron：`31.7.7`
-- electron-builder：`24.13.3`
+- Electron：`42.4.0`
+- electron-builder：`26.15.2`
 
 依赖安装：
 
