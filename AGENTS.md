@@ -115,6 +115,8 @@ node scripts\verify-edge-extension.mjs
 npm.cmd run verify:ui
 ```
 
+涉及桌面安全响应头、Electron 导航或下载策略时，也需要运行 `npm.cmd run verify:ui`，确认 CSP、`nosniff`、`no-referrer`、`DENY` 和权限策略断言仍通过。
+
 涉及打包时：
 
 ```powershell
@@ -169,6 +171,9 @@ npm.cmd run dist
 - Electron 需要用 `pathToFileURL()` 动态导入 ESM 服务端模块。
 - 桌面版服务固定绑定并加载 `http://127.0.0.1:4173`，避免 Windows 上 `localhost` 解析到 IPv6 `::1` 时读到另一套开发服务配置。
 - 桌面版运行数据必须写入 `app.getPath('userData')`，不要写入安装目录。
+- Electron 窗口内只允许工作台本地地址导航；打开外部链接只能放行 `http:` 和 `https:`，禁止 `file:`、`javascript:`、`data:` 和自定义协议被传给 `shell.openExternal()`。
+- Electron 默认拒绝页面权限申请，禁止附加 `webview`；下载只允许工作台本地地址和本地工作台页面创建的 `blob:` 导出。
+- 本地 HTTP 服务需要保留基础安全响应头：`Content-Security-Policy`、`X-Content-Type-Options: nosniff`、`Referrer-Policy: no-referrer`、`X-Frame-Options: DENY` 和 `Permissions-Policy`；静态资源路径必须防止跳出 `public/`。
 - 安装包输出目录是 `release/`，不要提交构建产物。
 - Windows 打包配置入口是 `electron-builder.config.cjs`；默认 `npm.cmd run dist` 可生成未签名测试包，`npm.cmd run dist:signed` 会要求签名证书并在缺失时提前失败。
 - 当前使用 Electron `42.4.0` 和 electron-builder `26.15.2`；electron-builder 26 的 Windows 证书主题和 SHA1 需要写入 `win.signtoolOptions`，不要把空的 `certificateSubjectName` / `certificateSha1` 直接放在 `win` 顶层。

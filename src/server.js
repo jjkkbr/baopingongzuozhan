@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { createHash, createHmac } from 'node:crypto';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
-import { dirname, extname, join, normalize, resolve } from 'node:path';
+import { dirname, extname, isAbsolute, join, normalize, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -110,6 +110,28 @@ const mimeTypes = {
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
   '.mp4': 'video/mp4'
+};
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: http: https:",
+  "media-src 'self' data: blob: http: https:",
+  "connect-src 'self'",
+  "font-src 'self' data:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'none'",
+  "form-action 'self'",
+  "frame-src 'none'"
+].join('; ');
+
+const securityHeaders = {
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'no-referrer',
+  'X-Frame-Options': 'DENY',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), fullscreen=(self)'
 };
 
 const platformNames = {
@@ -7218,8 +7240,9 @@ async function readJsonBody(req) {
 async function serveStatic(req, res, url) {
   let pathname = decodeURIComponent(url.pathname);
   if (pathname === '/') pathname = '/index.html';
-  const filePath = normalize(join(publicDir, pathname));
-  if (!filePath.startsWith(publicDir)) {
+  const filePath = normalize(resolve(publicDir, `.${pathname}`));
+  const relativePath = relative(publicDir, filePath);
+  if (relativePath === '..' || relativePath.startsWith(`..${sep}`) || isAbsolute(relativePath)) {
     sendJson(res, 403, { error: 'FORBIDDEN' });
     return;
   }
@@ -7228,33 +7251,41 @@ async function serveStatic(req, res, url) {
     return;
   }
   const ext = extname(filePath).toLowerCase();
-  res.writeHead(200, {
+  res.writeHead(200, withSecurityHeaders({
     'Content-Type': mimeTypes[ext] || 'application/octet-stream',
     'Cache-Control': 'no-store'
-  });
+  }, { csp: true }));
   createReadStream(filePath).pipe(res);
 }
 
+function withSecurityHeaders(headers = {}, options = {}) {
+  return {
+    ...securityHeaders,
+    ...(options.csp ? { 'Content-Security-Policy': contentSecurityPolicy } : {}),
+    ...headers
+  };
+}
+
 function sendJson(res, status, payload) {
-  res.writeHead(status, {
+  res.writeHead(status, withSecurityHeaders({
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Cache-Control': 'no-store'
-  });
+  }));
   res.end(JSON.stringify(payload, null, 2));
 }
 
 function sendJsonDownload(res, status, payload, filename) {
-  res.writeHead(status, {
+  res.writeHead(status, withSecurityHeaders({
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Disposition': `attachment; filename="${safeDownloadFileName(filename)}"`,
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Cache-Control': 'no-store'
-  });
+  }));
   res.end(JSON.stringify(payload, null, 2));
 }
 
@@ -7270,11 +7301,11 @@ function formatDateStamp(date = new Date()) {
 }
 
 function sendOptions(res) {
-  res.writeHead(204, {
+  res.writeHead(204, withSecurityHeaders({
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400'
-  });
+  }));
   res.end();
 }

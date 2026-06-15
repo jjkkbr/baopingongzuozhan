@@ -45,6 +45,8 @@
 
 2026-06-11 已升级 Electron 到 `42.4.0`、electron-builder 到 `26.15.2`，新增 `npm.cmd run verify` 与 GitHub Actions 自动验证，并发布 `v0.1.1` 测试版。线上 Release 地址为 `https://github.com/jjkkbr/baopingongzuozhan/releases/tag/v0.1.1`，附件文件名为 `baopin-workbench-setup-0.1.1.exe`。`npm audit --audit-level=high` 当前为 0 漏洞，`0.1.1` 安装包 SHA256 为 `E7A02E7918FF1423821618E9D97020C6EA18D93924BE151E7F5CB0992A6ACDA1`。
 
+2026-06-15 已完成桌面安全加固：Electron 窗口内只允许工作台本地地址导航，外部链接只放行 `http/https`，默认拒绝页面权限和 `webview`，下载限定为工作台本地来源或本地 `blob:` 导出；本地 HTTP 服务已补充 CSP、`nosniff`、`no-referrer`、`X-Frame-Options: DENY` 和 `Permissions-Policy`，UI 回归脚本会检查这些安全头。
+
 ## 环境
 
 - Windows
@@ -179,6 +181,24 @@ const { startServer } = await import(pathToFileURL(serverModulePath).href);
 不要改回直接 `import(serverModulePath)`。
 
 同时不要把桌面窗口加载地址改回不确定的 `localhost`。Windows 环境中 `localhost` 可能优先解析到 IPv6 `::1`，如果另一个开发服务监听在 `::`，会造成配置串线。
+
+### 桌面安全加固
+
+当前桌面安全策略落在 `desktop/main.cjs` 和 `src/server.js`：
+
+- `BrowserWindow` 保持 `nodeIntegration: false`、`contextIsolation: true`、`sandbox: true`。
+- 窗口内导航只允许 `http://127.0.0.1:4173` 和兼容用的 `http://localhost:4173`；其他导航会被阻止。
+- `shell.openExternal()` 只允许 `http:` 和 `https:`，不要把 `file:`、`javascript:`、`data:` 或自定义协议传给系统打开。
+- 默认拒绝页面权限申请和权限检查，禁止附加 `webview`。
+- 下载只允许工作台本地来源，兼容前端本地 `blob:` JSON 导出。
+- 本地 HTTP 服务保留 CSP、`nosniff`、`no-referrer`、`X-Frame-Options: DENY` 和 `Permissions-Policy`；静态资源路径使用 `relative()` 校验，防止跳出 `public/`。
+
+涉及这些策略时需运行：
+
+```powershell
+npm.cmd run verify
+npm.cmd run verify:ui
+```
 
 ### 数据保存位置
 
@@ -377,6 +397,7 @@ node scripts\verify-ui.mjs http://127.0.0.1:4173
 - 2026-05-26 今日记录见 `docs/work-log.md`。重点包括视觉模型独立配置、视觉风险结果细化、创意质量控制、单品专业交付包和批量报告包导出增强。
 - 2026-05-27 今日记录见 `docs/work-log.md`。重点包括素材版权台账基础版、审核匹配、专业导出证据包和 UI/API 回归验证。
 - 2026-06-09 今日记录见 `docs/work-log.md`。重点包括素材版权台账增强、规则库导入差异预览、版本快照回滚和品牌词授权状态审核提示。
+- 2026-06-15 今日记录见 `docs/work-log.md`。重点包括 Electron 导航/外链/权限/下载加固、本地服务安全响应头和 UI 安全头回归断言。
 
 ## 当前风险与注意事项
 

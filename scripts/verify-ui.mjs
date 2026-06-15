@@ -44,6 +44,8 @@ try {
   await client.send('Runtime.enable');
   await client.send('Page.enable');
   await client.send('Network.enable');
+  const securityHeaders = await readSecurityHeaders(targetUrl);
+  assertSecurityHeaders(securityHeaders);
   await client.send('Emulation.setDeviceMetricsOverride', {
     width: 1440,
     height: 1100,
@@ -959,6 +961,7 @@ try {
     delivery: deliveryCheck,
     actions: actionCheck,
     stack: stackCheck,
+    securityHeaders,
     selected: generated.selected,
     screenshotPath,
     consoleLogs: logs
@@ -1036,6 +1039,48 @@ function waitForEvent(client, method, timeoutMs) {
       resolveEvent(params);
     });
   });
+}
+
+async function readSecurityHeaders(url) {
+  const response = await fetch(url);
+  return {
+    status: response.status,
+    contentSecurityPolicy: response.headers.get('content-security-policy') || '',
+    xContentTypeOptions: response.headers.get('x-content-type-options') || '',
+    referrerPolicy: response.headers.get('referrer-policy') || '',
+    xFrameOptions: response.headers.get('x-frame-options') || '',
+    permissionsPolicy: response.headers.get('permissions-policy') || ''
+  };
+}
+
+function assertSecurityHeaders(headers) {
+  const csp = headers.contentSecurityPolicy;
+  const requiredCsp = [
+    "default-src 'self'",
+    "script-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "frame-ancestors 'none'"
+  ];
+  const missingCsp = requiredCsp.filter((rule) => !csp.includes(rule));
+  if (headers.status < 200 || headers.status >= 300) {
+    throw new Error(`Security header check failed: root response status ${headers.status}`);
+  }
+  if (missingCsp.length > 0) {
+    throw new Error(`Security header check failed: missing CSP rules ${missingCsp.join(', ')}`);
+  }
+  if (headers.xContentTypeOptions.toLowerCase() !== 'nosniff') {
+    throw new Error(`Security header check failed: X-Content-Type-Options=${headers.xContentTypeOptions || '(missing)'}`);
+  }
+  if (headers.referrerPolicy.toLowerCase() !== 'no-referrer') {
+    throw new Error(`Security header check failed: Referrer-Policy=${headers.referrerPolicy || '(missing)'}`);
+  }
+  if (headers.xFrameOptions.toUpperCase() !== 'DENY') {
+    throw new Error(`Security header check failed: X-Frame-Options=${headers.xFrameOptions || '(missing)'}`);
+  }
+  if (!headers.permissionsPolicy.includes('camera=()') || !headers.permissionsPolicy.includes('microphone=()')) {
+    throw new Error(`Security header check failed: Permissions-Policy=${headers.permissionsPolicy || '(missing)'}`);
+  }
 }
 
 async function waitFor(check, timeoutMs) {

@@ -1,5 +1,34 @@
 # 工作日志
 
+## 2026-06-15
+
+### 桌面安全加固
+
+围绕桌面版运行边界做一轮安全收口，重点处理 Electron 外链/协议控制和本地 HTTP 服务安全响应头。
+
+已完成：
+- 收紧 `desktop/main.cjs` 导航策略：工作台窗口内只允许 `http://127.0.0.1:4173` 和兼容用的 `http://localhost:4173`；其他导航一律拦截。
+- `shell.openExternal()` 只放行 `http:` 和 `https:`，阻断 `file:`、`javascript:`、`data:`、自定义协议等危险外链。
+- 默认拒绝 Electron 权限申请和权限检查，阻止页面申请摄像头、麦克风、定位等桌面权限。
+- 禁止 `webview` 附加，降低嵌入外部页面带来的权限和导航风险。
+- 下载只允许来自工作台本地地址，兼容前端本地 `blob:` 导出的 JSON 文件，阻断外部来源下载。
+- `src/server.js` 为静态资源、JSON/API 和 OPTIONS 响应补充基础安全头：`Content-Security-Policy`、`X-Content-Type-Options: nosniff`、`Referrer-Policy: no-referrer`、`X-Frame-Options: DENY` 和 `Permissions-Policy`。
+- 静态文件服务改用 `relative()` 校验路径，避免通过路径前缀误判访问 `public/` 外部文件。
+- `scripts/verify-ui.mjs` 新增安全头断言，UI 回归会检查 CSP、`nosniff`、`no-referrer`、`DENY` 和权限策略是否存在。
+
+验证记录：
+```powershell
+node --check desktop\main.cjs
+node --check src\server.js
+node --check scripts\verify-ui.mjs
+npm.cmd run verify
+npm.cmd run verify:ui
+```
+
+验证结果：
+- `npm.cmd run verify` 通过，Edge fixture 识别 10/10 个商品。
+- `npm.cmd run verify:ui` 通过，页面回归 `ok: true`，控制台无错误，安全响应头检查通过。
+
 ## 2026-06-11
 
 ### Electron 依赖升级和 v0.1.1 测试版准备

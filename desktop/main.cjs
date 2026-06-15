@@ -1,10 +1,11 @@
-const { app, BrowserWindow, dialog, shell } = require('electron');
+const { app, BrowserWindow, dialog, shell, session } = require('electron');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 
 const DEFAULT_PORT = 4173;
 const LOCAL_HOST = '127.0.0.1';
 const APP_ICON = path.join(__dirname, 'assets', 'icon.ico');
+const SAFE_EXTERNAL_PROTOCOLS = new Set(['http:', 'https:']);
 
 let mainWindow;
 let serverHandle;
@@ -13,6 +14,7 @@ app.setName('爆品广告工作台');
 
 app.whenReady().then(async () => {
   try {
+    configureSessionSecurity();
     const serverInfo = await startWorkbenchServer();
     createMainWindow(serverInfo.url);
   } catch (error) {
@@ -88,18 +90,69 @@ function createMainWindow(url) {
   mainWindow.loadURL(url);
 
   mainWindow.webContents.setWindowOpenHandler(({ url: nextUrl }) => {
-    shell.openExternal(nextUrl);
+    openSafeExternal(nextUrl);
     return { action: 'deny' };
   });
 
   mainWindow.webContents.on('will-navigate', (event, nextUrl) => {
-    if (!nextUrl.startsWith(`http://localhost:${DEFAULT_PORT}`) && !nextUrl.startsWith(`http://127.0.0.1:${DEFAULT_PORT}`)) {
-      event.preventDefault();
-      shell.openExternal(nextUrl);
-    }
+    if (isWorkbenchUrl(nextUrl)) return;
+    event.preventDefault();
+    openSafeExternal(nextUrl);
+  });
+
+  mainWindow.webContents.on('will-attach-webview', (event) => {
+    event.preventDefault();
   });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+}
+
+function configureSessionSecurity() {
+  const defaultSession = session.defaultSession;
+  defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => {
+    callback(false);
+  });
+  defaultSession.setPermissionCheckHandler(() => false);
+  defaultSession.on('will-download', (event, item) => {
+    if (!isWorkbenchDownloadUrl(item.getURL())) {
+      event.preventDefault();
+    }
+  });
+}
+
+function isWorkbenchUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:'
+      && Number(parsed.port || 80) === DEFAULT_PORT
+      && (parsed.hostname === LOCAL_HOST || parsed.hostname === 'localhost');
+  } catch {
+    return false;
+  }
+}
+
+function isSafeExternalUrl(value) {
+  try {
+    return SAFE_EXTERNAL_PROTOCOLS.has(new URL(value).protocol);
+  } catch {
+    return false;
+  }
+}
+
+function isWorkbenchDownloadUrl(value) {
+  if (isWorkbenchUrl(value)) return true;
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'blob:' && isWorkbenchUrl(value.slice('blob:'.length));
+  } catch {
+    return false;
+  }
+}
+
+function openSafeExternal(value) {
+  if (isSafeExternalUrl(value)) {
+    shell.openExternal(value);
+  }
 }

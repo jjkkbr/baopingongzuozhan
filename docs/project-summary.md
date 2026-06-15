@@ -164,6 +164,8 @@ npm.cmd run dist:signed
 
 - 修复 Electron 在 Windows 上动态导入服务端模块时的 ESM 路径问题，使用 `pathToFileURL()`。
 - 修复桌面版使用 `localhost` 时可能串到 IPv6 `::1` 上另一套服务的问题，统一绑定并加载 `127.0.0.1:4173`。
+- 加固桌面安全边界：Electron 只允许工作台本地地址在窗口内导航，外部链接只放行 `http/https`，默认拒绝页面权限和 `webview`，下载限定为工作台本地来源或本地 `blob:` 导出。
+- 本地 HTTP 服务已补充 CSP、`nosniff`、`no-referrer`、`X-Frame-Options: DENY` 和 `Permissions-Policy`，静态资源路径改用 `relative()` 校验防止跳出 `public/`。
 - 修复 AI 调用失败只显示英文错误的问题，加入中文诊断。
 - 拆分主模型和视觉模型配置，视觉分析可单独配置 `visualBaseUrl`、`visualModel` 和可选视觉 Key。
 - 修复插件来源 URL 文本撑破提示框的问题，长来源会截断并隐藏溢出。
@@ -197,6 +199,12 @@ npm.cmd run verify
 npm.cmd audit --audit-level=high
 npm.cmd run verify:ui
 ```
+
+2026-06-15 桌面安全加固验证：
+
+- `node --check desktop\main.cjs`、`node --check src\server.js`、`node --check scripts\verify-ui.mjs` 均通过。
+- `npm.cmd run verify` 通过，Edge fixture 识别 10/10 个商品。
+- `npm.cmd run verify:ui` 通过，新增安全头断言确认 CSP、`nosniff`、`no-referrer`、`DENY` 和权限策略均存在。
 
 2026-06-11 依赖升级和重新打包验证：
 
@@ -272,6 +280,7 @@ npm.cmd run verify:ui
 - 2026-05-26 今日完整记录见 `docs/work-log.md`：包含视觉模型独立配置、视觉风险结果细化、创意质量控制、单品专业交付包和批量报告包导出增强。
 - 2026-05-27 今日完整记录见 `docs/work-log.md`：包含素材版权台账基础版、审核匹配、证据包导出和 UI/API 回归验证。
 - 2026-06-09 今日完整记录见 `docs/work-log.md`：包含素材版权台账增强、规则库导入差异预览、版本快照回滚和品牌词授权状态审核提示。
+- 2026-06-15 今日完整记录见 `docs/work-log.md`：包含 Electron 导航/外链/权限/下载加固、本地服务安全响应头和 UI 安全头回归断言。
 
 ## 仍待完善
 
