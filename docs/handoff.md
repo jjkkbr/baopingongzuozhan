@@ -27,6 +27,8 @@
 - 已将 `AI 洞察` 合并到“素材洞察”标签页，素材分析和视觉分析结果集中展示。
 - 已将合规审核迁移到“投放建议”标签页，点击审核后自动切换到该面板。
 - 已将右侧主工作区改为自适应堆叠：商品预览/指标、创意工作区、批量任务按顺序紧凑排列，不再被左侧列高度撑出空白。
+- 已新增本地 API 会话门禁：页面加载时下发进程内 `ad_workbench_session` HttpOnly Cookie，除 `/api/health` 外，API 默认只接受工作台同源页面携带会话的请求。
+- 已收窄 CORS，不再对任意网页开放 `Access-Control-Allow-Origin: *`；Edge 插件导入仅允许扩展来源调用 `/api/import/extension-products`，并要求 `X-Workbench-Extension: edge-dom-capture` 请求头。
 
 最新可执行文件：
 
@@ -48,6 +50,8 @@
 2026-06-15 已完成桌面安全加固：Electron 窗口内只允许工作台本地地址导航，外部链接只放行 `http/https`，默认拒绝页面权限和 `webview`，下载限定为工作台本地来源或本地 `blob:` 导出；本地 HTTP 服务已补充 CSP、`nosniff`、`no-referrer`、`X-Frame-Options: DENY` 和 `Permissions-Policy`，UI 回归脚本会检查这些安全头。
 
 2026-06-20 已完成 `v0.1.2` 测试版构建准备：版本号已升级到 `0.1.2`，新增 `docs/releases/v0.1.2.md`，本版重新打包了包含桌面安全加固的 Windows 测试安装包。安装包大小 104,145,215 字节，SHA256 为 `524D0E3089D26B5E285233C198D8E4CF23DFD87FB9E8647DE3CEB4A07A69D541`；免安装版和静默安装版均已冒烟通过，卸载后测试安装目录不存在且 4173 端口无占用。当前安装包仍未签名。
+
+2026-06-20 已继续完成本地 API 安全加固：`src/server.js` 通过本机会话 Cookie 保护 API，`public/app.js` 明确同源凭证请求，`edge-extension/popup.js` 补充插件导入标识头，`scripts/verify-ui.mjs` 会检查会话 Cookie、无会话 403 和缺少插件标识 403。若用户反馈插件发送失败，优先让其在 `edge://extensions/` 重新加载最新版插件。
 
 ## 环境
 
@@ -194,6 +198,8 @@ const { startServer } = await import(pathToFileURL(serverModulePath).href);
 - 默认拒绝页面权限申请和权限检查，禁止附加 `webview`。
 - 下载只允许工作台本地来源，兼容前端本地 `blob:` JSON 导出。
 - 本地 HTTP 服务保留 CSP、`nosniff`、`no-referrer`、`X-Frame-Options: DENY` 和 `Permissions-Policy`；静态资源路径使用 `relative()` 校验，防止跳出 `public/`。
+- 本地 API 现有进程内会话门禁：HTML 页面下发 `ad_workbench_session` HttpOnly Cookie，API 默认要求同源页面携带该 Cookie；只保留 `/api/health` 无会话健康检查。
+- CORS 不再使用通配 `*`；浏览器扩展只允许携带 `X-Workbench-Extension: edge-dom-capture` 访问 `/api/import/extension-products`，不要把该豁免扩展给其他接口。
 
 涉及这些策略时需运行：
 

@@ -174,6 +174,9 @@ npm.cmd run dist
 - Electron 窗口内只允许工作台本地地址导航；打开外部链接只能放行 `http:` 和 `https:`，禁止 `file:`、`javascript:`、`data:` 和自定义协议被传给 `shell.openExternal()`。
 - Electron 默认拒绝页面权限申请，禁止附加 `webview`；下载只允许工作台本地地址和本地工作台页面创建的 `blob:` 导出。
 - 本地 HTTP 服务需要保留基础安全响应头：`Content-Security-Policy`、`X-Content-Type-Options: nosniff`、`Referrer-Policy: no-referrer`、`X-Frame-Options: DENY` 和 `Permissions-Policy`；静态资源路径必须防止跳出 `public/`。
+- 本地 API 需要保留进程内会话门禁：静态 HTML 响应下发 `ad_workbench_session` HttpOnly Cookie，除 `GET /api/health` 外，API 默认只接受工作台同源页面携带该 Cookie 的请求；不要重新放开 `Access-Control-Allow-Origin: *`。
+- Edge 插件导入只允许 `/api/import/extension-products`，并要求扩展来源和 `X-Workbench-Extension: edge-dom-capture` 请求头；不要把该豁免扩展到其他 API、后台抓取、登录态采集或批量采集。
+- 涉及本地 API 鉴权、CORS、插件导入或安全响应头时，需要运行 `npm.cmd run verify:ui`，确认会话 Cookie、无会话 403 拦截和插件导入拦截断言仍通过。
 - 安装包输出目录是 `release/`，不要提交构建产物。
 - Windows 打包配置入口是 `electron-builder.config.cjs`；默认 `npm.cmd run dist` 可生成未签名测试包，`npm.cmd run dist:signed` 会要求签名证书并在缺失时提前失败。
 - 当前使用 Electron `42.4.0` 和 electron-builder `26.15.2`；electron-builder 26 的 Windows 证书主题和 SHA1 需要写入 `win.signtoolOptions`，不要把空的 `certificateSubjectName` / `certificateSha1` 直接放在 `win` 顶层。

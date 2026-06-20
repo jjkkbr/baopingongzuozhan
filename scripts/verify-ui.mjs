@@ -46,6 +46,8 @@ try {
   await client.send('Network.enable');
   const securityHeaders = await readSecurityHeaders(targetUrl);
   assertSecurityHeaders(securityHeaders);
+  const localApiSecurity = await readLocalApiSecurity(targetUrl);
+  assertLocalApiSecurity(localApiSecurity);
   await client.send('Emulation.setDeviceMetricsOverride', {
     width: 1440,
     height: 1100,
@@ -962,6 +964,7 @@ try {
     actions: actionCheck,
     stack: stackCheck,
     securityHeaders,
+    localApiSecurity,
     selected: generated.selected,
     screenshotPath,
     consoleLogs: logs
@@ -1043,13 +1046,36 @@ function waitForEvent(client, method, timeoutMs) {
 
 async function readSecurityHeaders(url) {
   const response = await fetch(url);
+  const setCookie = typeof response.headers.getSetCookie === 'function'
+    ? response.headers.getSetCookie().join('; ')
+    : response.headers.get('set-cookie') || '';
   return {
     status: response.status,
+    sessionCookieSet: setCookie.includes('ad_workbench_session='),
     contentSecurityPolicy: response.headers.get('content-security-policy') || '',
     xContentTypeOptions: response.headers.get('x-content-type-options') || '',
     referrerPolicy: response.headers.get('referrer-policy') || '',
     xFrameOptions: response.headers.get('x-frame-options') || '',
     permissionsPolicy: response.headers.get('permissions-policy') || ''
+  };
+}
+
+async function readLocalApiSecurity(url) {
+  const unsafePost = await fetch(new URL('/api/open/output-dir', url), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}'
+  });
+  const extensionWithoutMarker = await fetch(new URL('/api/import/extension-products', url), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ products: [] })
+  });
+  const forbiddenPayload = await unsafePost.json().catch(() => ({}));
+  return {
+    unsafePostStatus: unsafePost.status,
+    extensionWithoutMarkerStatus: extensionWithoutMarker.status,
+    error: forbiddenPayload.error || ''
   };
 }
 
@@ -1066,6 +1092,9 @@ function assertSecurityHeaders(headers) {
   if (headers.status < 200 || headers.status >= 300) {
     throw new Error(`Security header check failed: root response status ${headers.status}`);
   }
+  if (!headers.sessionCookieSet) {
+    throw new Error('Security header check failed: local API session cookie was not set by the workbench page');
+  }
   if (missingCsp.length > 0) {
     throw new Error(`Security header check failed: missing CSP rules ${missingCsp.join(', ')}`);
   }
@@ -1080,6 +1109,18 @@ function assertSecurityHeaders(headers) {
   }
   if (!headers.permissionsPolicy.includes('camera=()') || !headers.permissionsPolicy.includes('microphone=()')) {
     throw new Error(`Security header check failed: Permissions-Policy=${headers.permissionsPolicy || '(missing)'}`);
+  }
+}
+
+function assertLocalApiSecurity(result) {
+  if (result.unsafePostStatus !== 403) {
+    throw new Error(`Local API security check failed: unauthenticated POST returned ${result.unsafePostStatus}`);
+  }
+  if (result.extensionWithoutMarkerStatus !== 403) {
+    throw new Error(`Local API security check failed: extension import without marker returned ${result.extensionWithoutMarkerStatus}`);
+  }
+  if (result.error !== 'LOCAL_API_FORBIDDEN') {
+    throw new Error(`Local API security check failed: unexpected forbidden payload ${JSON.stringify(result)}`);
   }
 }
 

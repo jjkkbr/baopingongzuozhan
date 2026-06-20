@@ -1,6 +1,6 @@
 import http from 'node:http';
 import { spawn } from 'node:child_process';
-import { createHash, createHmac } from 'node:crypto';
+import { createHash, createHmac, randomBytes } from 'node:crypto';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { dirname, extname, isAbsolute, join, normalize, relative, resolve, sep } from 'node:path';
@@ -53,6 +53,10 @@ const defaultComplianceRules = {
   ]
 };
 const port = Number(process.env.PORT || 4173);
+const LOCAL_API_COOKIE = 'ad_workbench_session';
+const localApiSessionToken = randomBytes(24).toString('base64url');
+const EXTENSION_API_HEADER = 'x-workbench-extension';
+const EXTENSION_API_HEADER_VALUE = 'edge-dom-capture';
 const DEFAULT_BATCH_LIST_LIMIT = 10;
 const MAX_BATCH_HISTORY = 80;
 const MAX_BATCH_LIST_LIMIT = 50;
@@ -134,6 +138,91 @@ const securityHeaders = {
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), fullscreen=(self)'
 };
 
+function applyCorsHeaders(req, res) {
+  const origin = String(req.headers.origin || '');
+  if (isAllowedCorsOrigin(origin, req)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    if (isAllowedLocalOrigin(origin, req)) {
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Workbench-Extension');
+  res.setHeader('Access-Control-Max-Age', '86400');
+}
+
+function isAllowedCorsOrigin(origin, req) {
+  return isAllowedLocalOrigin(origin, req) || isAllowedExtensionOrigin(origin);
+}
+
+function isAllowedLocalOrigin(origin, req) {
+  if (!origin) return false;
+  try {
+    const parsed = new URL(origin);
+    const hostname = parsed.hostname.toLowerCase();
+    const localHosts = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
+    if (parsed.protocol !== 'http:' || !localHosts.has(hostname)) return false;
+    const requestPort = getRequestPort(req);
+    return !requestPort || parsed.port === requestPort;
+  } catch {
+    return false;
+  }
+}
+
+function getRequestPort(req) {
+  const host = String(req.headers.host || '');
+  const bracketMatch = host.match(/^\[[^\]]+\]:(\d+)$/);
+  if (bracketMatch) return bracketMatch[1];
+  const parts = host.split(':');
+  return parts.length > 1 ? parts.at(-1) : '';
+}
+
+function isAllowedExtensionOrigin(origin) {
+  return /^chrome-extension:\/\/[a-z]{32}$/i.test(origin) || /^edge-extension:\/\/[a-z]{32}$/i.test(origin);
+}
+
+function authorizeApiRequest(req, url) {
+  if (hasWorkbenchSession(req) && isTrustedWorkbenchOrigin(req)) return true;
+  return isExtensionImportRequest(req, url);
+}
+
+function hasWorkbenchSession(req) {
+  return parseCookies(req.headers.cookie || '')[LOCAL_API_COOKIE] === localApiSessionToken;
+}
+
+function isTrustedWorkbenchOrigin(req) {
+  const origin = String(req.headers.origin || '');
+  return !origin || isAllowedLocalOrigin(origin, req);
+}
+
+function isExtensionImportRequest(req, url) {
+  return req.method === 'POST'
+    && url.pathname === '/api/import/extension-products'
+    && String(req.headers[EXTENSION_API_HEADER] || '') === EXTENSION_API_HEADER_VALUE
+    && isAllowedExtensionOrigin(String(req.headers.origin || ''));
+}
+
+function parseCookies(header) {
+  return String(header || '')
+    .split(';')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .reduce((cookies, part) => {
+      const separatorIndex = part.indexOf('=');
+      if (separatorIndex < 0) return cookies;
+      const key = part.slice(0, separatorIndex).trim();
+      const value = part.slice(separatorIndex + 1).trim();
+      if (!key) return cookies;
+      cookies[key] = value;
+      return cookies;
+    }, {});
+}
+
+function buildLocalApiSessionCookie() {
+  return `${LOCAL_API_COOKIE}=${localApiSessionToken}; Path=/; SameSite=Strict; HttpOnly`;
+}
+
 const platformNames = {
   taobao: '淘宝',
   douyin: '抖音',
@@ -144,6 +233,7 @@ const platformNames = {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
+    applyCorsHeaders(req, res);
     if (req.method === 'OPTIONS') {
       sendOptions(res);
       return;
@@ -212,6 +302,15 @@ async function handleApi(req, res, url) {
         'Only use official APIs, merchant-owned exports, or explicit authorization.',
         'Generate original ad concepts; do not clone protected creative assets.'
       ]
+    });
+    return;
+  }
+
+  if (!authorizeApiRequest(req, url)) {
+    sendJson(res, 403, {
+      error: 'LOCAL_API_FORBIDDEN',
+      message: '本地 API 只接受工作台页面或已授权插件请求，请从工作台页面重试。',
+      hint: '刷新工作台页面后会自动建立本机会话；Edge 插件请使用项目内最新版插件。'
     });
     return;
   }
@@ -7253,6 +7352,7 @@ async function serveStatic(req, res, url) {
   const ext = extname(filePath).toLowerCase();
   res.writeHead(200, withSecurityHeaders({
     'Content-Type': mimeTypes[ext] || 'application/octet-stream',
+    ...(ext === '.html' ? { 'Set-Cookie': buildLocalApiSessionCookie() } : {}),
     'Cache-Control': 'no-store'
   }, { csp: true }));
   createReadStream(filePath).pipe(res);
@@ -7269,9 +7369,6 @@ function withSecurityHeaders(headers = {}, options = {}) {
 function sendJson(res, status, payload) {
   res.writeHead(status, withSecurityHeaders({
     'Content-Type': 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
     'Cache-Control': 'no-store'
   }));
   res.end(JSON.stringify(payload, null, 2));
@@ -7281,9 +7378,6 @@ function sendJsonDownload(res, status, payload, filename) {
   res.writeHead(status, withSecurityHeaders({
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Disposition': `attachment; filename="${safeDownloadFileName(filename)}"`,
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
     'Cache-Control': 'no-store'
   }));
   res.end(JSON.stringify(payload, null, 2));
@@ -7301,11 +7395,6 @@ function formatDateStamp(date = new Date()) {
 }
 
 function sendOptions(res) {
-  res.writeHead(204, withSecurityHeaders({
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Max-Age': '86400'
-  }));
+  res.writeHead(204, withSecurityHeaders());
   res.end();
 }

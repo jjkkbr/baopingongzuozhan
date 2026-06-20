@@ -59,19 +59,19 @@ npm.cmd run desktop
 当前测试版：
 
 ```text
-https://github.com/jjkkbr/baopingongzuozhan/releases/tag/v0.1.1
+https://github.com/jjkkbr/baopingongzuozhan/releases/tag/v0.1.2
 ```
 
 安装包附件：
 
 ```text
-baopin-workbench-setup-0.1.1.exe
+baopin-workbench-setup-0.1.2.exe
 ```
 
 SHA256：
 
 ```text
-E7A02E7918FF1423821618E9D97020C6EA18D93924BE151E7F5CB0992A6ACDA1
+524D0E3089D26B5E285233C198D8E4CF23DFD87FB9E8647DE3CEB4A07A69D541
 ```
 
 当前测试安装包尚未配置正式代码签名证书，Windows 安装时可能提示“未知发布者”。
@@ -121,7 +121,7 @@ npm.cmd run dist:signed
 当前安装包输出路径：
 
 ```text
-release/爆品广告工作台 Setup 0.1.1.exe
+release/爆品广告工作台 Setup 0.1.2.exe
 ```
 
 免安装版可执行文件：
@@ -175,6 +175,14 @@ npm.cmd run verify:ui
 ```
 
 本地私有文件已经被 `.gitignore` 排除，包括 `data/*.local.json`、`.env`、`output/`、`release/`、日志文件和 Edge 临时目录。不要用 `git add -f` 强行提交这些文件。
+
+## 本地 API 安全
+
+工作台的本地 API 已增加会话门禁：页面首次加载时，本地服务会下发仅保存在当前进程内的 `ad_workbench_session` Cookie；除 `GET /api/health` 外，API 默认只接受工作台同源页面自动携带该 Cookie 的请求。这个会话值不会写入磁盘、不会打印到日志，也不会进入导出包。
+
+跨域访问已收窄，不再对任意网页返回 `Access-Control-Allow-Origin: *`。Edge 插件只有在从浏览器扩展来源调用 `/api/import/extension-products`，并携带项目内约定的 `X-Workbench-Extension: edge-dom-capture` 请求头时，才允许把当前页面已渲染的授权商品信息发送到工作台。
+
+如果你在页面里看到 `LOCAL_API_FORBIDDEN` 或 403，请先刷新工作台页面，让浏览器重新建立本机会话；如果是插件发送失败，请在 `edge://extensions/` 重新加载项目内最新版插件，再重试发送。
 
 ## AI 大模型分析
 
@@ -326,6 +334,8 @@ demo-001,2026-05-21,156
 当前插件识别样本已覆盖淘宝/天猫、抖音/内容电商、通用商品链接、京东、拼多多、小红书/内容电商、1688 供货卡、快手/小店商品卡、商家后台表格行和紧凑货架卡，并会排除广告位、直播入口、优惠券组件等非商品反例。真实平台页面仍会持续改版，遇到漏识别时请先匿名化授权页面片段，再补进 `scripts/fixtures/edge-extension-products.html` 做回归。
 
 更新流程：如果你改了 `edge-extension/` 里的代码，回到 `edge://extensions/` 找到“爆品工作台采集助手”，点一次“重新加载”，浏览器就会读到新版本；如果你用的是打包版安装目录里的插件资源，就需要把新版本一起更新到安装包或安装目录里再重载。插件更新后建议先在授权页面跑一遍，再回到工作台确认“读取插件数据”是否正常。
+
+注意：当前工作台会校验插件上报请求标识。插件代码更新后必须重新加载扩展，否则旧插件可能因为缺少 `X-Workbench-Extension` 请求头而被本地 API 拦截。
 
 ## 批量任务
 

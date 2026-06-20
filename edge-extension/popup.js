@@ -69,7 +69,10 @@ async function sendProductsToWorkbench(payload) {
     try {
       const response = await fetch(`${baseUrl}/api/import/extension-products`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Workbench-Extension': 'edge-dom-capture'
+        },
         body: JSON.stringify(payload)
       });
       const data = await response.json().catch(() => ({}));

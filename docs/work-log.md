@@ -2,6 +2,33 @@
 
 ## 2026-06-20
 
+### 本地 API 会话门禁加固
+
+在 `v0.1.2` 安全发布后继续补一层本地 API 防护，重点降低外部网页误调用 `127.0.0.1:4173` 本地接口的风险。
+
+已完成：
+- `src/server.js` 新增进程内随机会话令牌，静态 HTML 响应下发 `ad_workbench_session` HttpOnly Cookie；除 `GET /api/health` 外，API 默认要求工作台同源页面携带该 Cookie。
+- 移除 JSON/API 响应里的通配 CORS，不再返回 `Access-Control-Allow-Origin: *`；只对工作台本地来源和浏览器扩展来源回显允许的 Origin。
+- Edge 插件导入保留最小豁免：仅 `/api/import/extension-products` 接受扩展来源，并要求 `X-Workbench-Extension: edge-dom-capture` 请求头。
+- `public/app.js` 的统一 API helper 明确使用 `credentials: 'same-origin'`，让工作台页面请求自动携带本机会话 Cookie。
+- `edge-extension/popup.js` 发送商品到工作台时补充插件请求标识头，旧插件需要在 `edge://extensions/` 重新加载后才能通过新门禁。
+- `scripts/verify-ui.mjs` 新增安全断言：根页面必须下发本机会话 Cookie；无会话调用 `POST /api/open/output-dir` 必须返回 403；缺少插件标识的 `/api/import/extension-products` 必须返回 403。
+- README、AGENTS、项目总结和交接文档已同步本地 API 安全规则与排障说明。
+
+验证记录：
+```powershell
+node --check src\server.js
+node --check public\app.js
+node --check edge-extension\popup.js
+node --check scripts\verify-ui.mjs
+npm.cmd run verify
+npm.cmd run verify:ui
+```
+
+验证结果：
+- `npm.cmd run verify` 通过，Edge fixture 识别 10/10 个商品。
+- `npm.cmd run verify:ui` 通过，UI 回归返回 `ok: true`；安全头、会话 Cookie、无会话 403 和缺少插件标识 403 断言均通过。
+
 ### v0.1.2 测试版准备
 
 继续把桌面安全加固推进到可安装交付包：

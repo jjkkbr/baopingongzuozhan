@@ -60,6 +60,7 @@
 - 批量失败原因分类：失败项会记录错误分类、失败阶段、错误代码和是否建议重试，并同步到前端详情、`summary.json`、`batch-report.md` 和 `batch-summary.csv`。
 - 批量报告筛选体验：批量详情支持按商品/错误关键词、明细状态和错误分类筛选，并显示当前匹配数量。
 - 归档任务管理：归档任务可在含归档/已归档列表中恢复到常规列表，恢复时优先使用归档前状态，旧任务按明细状态推断。
+- 本地 API 会话门禁：除 `/api/health` 外，API 默认要求工作台同源页面携带进程内 `ad_workbench_session` Cookie；跨域 CORS 不再使用通配 `*`，Edge 插件导入需要扩展来源和 `X-Workbench-Extension: edge-dom-capture` 标识。
 - 正式应用图标已接入前端、Electron 窗口和 Windows 打包配置。
 - 首次启动向导，覆盖 AI Key、Edge 插件、授权数据导入、分析/生成/审核流程。
 - “打开导出目录”和“打开插件目录”快捷入口。
@@ -68,6 +69,7 @@
 - 2026-06-10 已创建 GitHub `v0.1.0` 测试版 Release，并上传安装包附件 `baopin-workbench-setup-0.1.0.exe`。
 - 2026-06-11 已升级 Electron 到 `42.4.0`、electron-builder 到 `26.15.2`，新增一键验证脚本和 GitHub Actions，并构建 `v0.1.1` 测试安装包；`npm audit --audit-level=high` 当前为 0 漏洞。
 - 2026-06-20 已完成 `v0.1.2` 测试版构建准备，目标是把桌面安全加固带进可安装包；安装包大小 104,145,215 字节，SHA256 为 `524D0E3089D26B5E285233C198D8E4CF23DFD87FB9E8647DE3CEB4A07A69D541`，发布记录见 `docs/releases/v0.1.2.md`。
+- 2026-06-20 已继续完成本地 API 安全加固，新增会话 Cookie 门禁、插件导入请求标识、收窄 CORS 和 UI 回归断言；如果旧版插件发送失败，需要在 `edge://extensions/` 重新加载最新版插件。
 
 ## 关键文件
 
@@ -167,6 +169,7 @@ npm.cmd run dist:signed
 - 修复桌面版使用 `localhost` 时可能串到 IPv6 `::1` 上另一套服务的问题，统一绑定并加载 `127.0.0.1:4173`。
 - 加固桌面安全边界：Electron 只允许工作台本地地址在窗口内导航，外部链接只放行 `http/https`，默认拒绝页面权限和 `webview`，下载限定为工作台本地来源或本地 `blob:` 导出。
 - 本地 HTTP 服务已补充 CSP、`nosniff`、`no-referrer`、`X-Frame-Options: DENY` 和 `Permissions-Policy`，静态资源路径改用 `relative()` 校验防止跳出 `public/`。
+- 本地 API 已补充进程内会话门禁和收窄 CORS：工作台页面通过 HttpOnly Cookie 自动建立本机会话，外部无会话 POST 会返回 `LOCAL_API_FORBIDDEN`，Edge 插件导入需携带项目约定请求头。
 - 修复 AI 调用失败只显示英文错误的问题，加入中文诊断。
 - 拆分主模型和视觉模型配置，视觉分析可单独配置 `visualBaseUrl`、`visualModel` 和可选视觉 Key。
 - 修复插件来源 URL 文本撑破提示框的问题，长来源会截断并隐藏溢出。

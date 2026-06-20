@@ -3568,12 +3568,14 @@ function hideActivity() {
 }
 
 async function api(path, options = {}) {
+  const { headers = {}, credentials = 'same-origin', ...requestOptions } = options;
   const response = await fetch(path, {
+    ...requestOptions,
+    credentials,
     headers: {
       'Content-Type': 'application/json',
-      ...(options.headers || {})
-    },
-    ...options
+      ...headers
+    }
   });
   const data = await response.json();
   if (!response.ok) {
