@@ -1,5 +1,20 @@
 # 工作日志
 
+## 2026-06-20
+
+### v0.1.2 测试版准备
+
+继续把桌面安全加固推进到可安装交付包：
+- 将项目版本从 `0.1.1` 升级到 `0.1.2`。
+- 新增 `docs/releases/v0.1.2.md`，记录本版定位、桌面安全加固内容、验证命令、安装链路和已知问题。
+- `npm.cmd audit --audit-level=high` 初次发现 `form-data` 和 `undici` 新高危传递依赖漏洞；已运行 `npm.cmd audit fix`，将 `form-data` 升到 `4.0.6`，`undici` 升到 `6.27.0` / `7.28.0`，复查后为 0 漏洞。
+- 已重新运行完整验证：`npm.cmd run verify`、`npm.cmd audit --audit-level=high`、`npm.cmd run verify:ui` 均通过。
+- 已重新打包 Windows NSIS 测试安装包：`release/爆品广告工作台 Setup 0.1.2.exe`，大小 104,145,215 字节。
+- 安装包 SHA256：`524D0E3089D26B5E285233C198D8E4CF23DFD87FB9E8647DE3CEB4A07A69D541`，校验文件为 `release/baopin-workbench-setup-0.1.2.sha256.txt`。
+- 免安装版冒烟通过：`http://127.0.0.1:4173` 返回 200，`/api/health` 返回 `ok: true`，打包资源包含 `resources/edge-extension/manifest.json`。
+- 安装链路通过：静默安装返回 `0`，已安装主程序启动后 4173 返回 200，静默卸载返回 `0`，卸载后测试安装目录不存在且 4173 端口无占用。
+- 当前安装包仍未配置正式代码签名证书，`Get-AuthenticodeSignature` 显示 `NotSigned`。
+
 ## 2026-06-15
 
 ### 桌面安全加固

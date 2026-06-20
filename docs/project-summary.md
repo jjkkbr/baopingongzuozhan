@@ -67,6 +67,7 @@
 - 2026-06-10 已重新构建 Windows 测试安装包和免安装版，并完成桌面冒烟验证；当前安装包未签名，Windows 仍可能提示未知发布者。
 - 2026-06-10 已创建 GitHub `v0.1.0` 测试版 Release，并上传安装包附件 `baopin-workbench-setup-0.1.0.exe`。
 - 2026-06-11 已升级 Electron 到 `42.4.0`、electron-builder 到 `26.15.2`，新增一键验证脚本和 GitHub Actions，并构建 `v0.1.1` 测试安装包；`npm audit --audit-level=high` 当前为 0 漏洞。
+- 2026-06-20 已完成 `v0.1.2` 测试版构建准备，目标是把桌面安全加固带进可安装包；安装包大小 104,145,215 字节，SHA256 为 `524D0E3089D26B5E285233C198D8E4CF23DFD87FB9E8647DE3CEB4A07A69D541`，发布记录见 `docs/releases/v0.1.2.md`。
 
 ## 关键文件
 
@@ -206,6 +207,13 @@ npm.cmd run verify:ui
 - `npm.cmd run verify` 通过，Edge fixture 识别 10/10 个商品。
 - `npm.cmd run verify:ui` 通过，新增安全头断言确认 CSP、`nosniff`、`no-referrer`、`DENY` 和权限策略均存在。
 
+2026-06-20 `v0.1.2` 打包和安装链路验证：
+
+- `npm.cmd audit --audit-level=high` 初次发现 `form-data` / `undici` 新高危传递依赖漏洞；已用 `npm.cmd audit fix` 升级到安全版本，复查为 0 漏洞。
+- `npm.cmd run verify`、`npm.cmd audit --audit-level=high`、`npm.cmd run verify:ui` 均通过。
+- `npm.cmd run dist` 成功生成 `release/爆品广告工作台 Setup 0.1.2.exe`。
+- 免安装版和静默安装版均启动成功，`http://127.0.0.1:4173` 返回 200，卸载后测试安装目录不存在且 4173 端口无占用。
+
 2026-06-11 依赖升级和重新打包验证：
 
 - `electron` 已升级到 `42.4.0`，`electron-builder` 已升级到 `26.15.2`。
@@ -281,6 +289,7 @@ npm.cmd run verify:ui
 - 2026-05-27 今日完整记录见 `docs/work-log.md`：包含素材版权台账基础版、审核匹配、证据包导出和 UI/API 回归验证。
 - 2026-06-09 今日完整记录见 `docs/work-log.md`：包含素材版权台账增强、规则库导入差异预览、版本快照回滚和品牌词授权状态审核提示。
 - 2026-06-15 今日完整记录见 `docs/work-log.md`：包含 Electron 导航/外链/权限/下载加固、本地服务安全响应头和 UI 安全头回归断言。
+- 2026-06-20 今日完整记录见 `docs/work-log.md`：包含 `v0.1.2` 测试版准备、版本升级、发布文档、重新打包和安装链路验证。
 
 ## 仍待完善
 
